@@ -19,7 +19,7 @@
         descricao: 'Plante, crie animais, produza nas fábricas e veja sua fazenda virar uma vila com mercado, trem de carga e eventos especiais ao longo do ano. Leve: o APK tem menos de 7 MB e também roda direto no navegador.',
         destaques: ['Mais de 150 modelos 3D', 'Dia, noite, chuva e arco-íris', 'Joga no navegador, sem instalar'],
         plataformas: ['Navegador', 'Android'],
-        capa: 'img/hh_cercado.jpg', icone: 'img/hh_icone.png',
+        capa: 'img/hh_cercado.jpg', capa_vitrine: '', icone: 'img/hh_icone.png',
         galeria: [
           { url: 'img/hh_vila.jpg', legenda: 'Vila e mercado' },
           { url: 'img/hh_chuva.jpg', legenda: 'Chuva no fim de tarde' },

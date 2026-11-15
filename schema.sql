@@ -31,6 +31,7 @@ create table if not exists jogos (
   destaques jsonb default '[]'::jsonb,
   plataformas jsonb default '[]'::jsonb,
   capa text default '',
+  capa_vitrine text default '',
   icone text default '',
   galeria jsonb default '[]'::jsonb,
   link_jogar text default '',
