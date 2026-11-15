@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0f1a33">
+<title>Driftwood Isle · Fabula Studio</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;background:#0f1a33;font-family:'Trebuchet MS',system-ui,sans-serif;color:#fff;touch-action:none}
+canvas{display:block}
+.ui{position:fixed;z-index:5;pointer-events:none}
+.ui *{pointer-events:auto}
+/* barras */
+#stats{left:12px;top:12px;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.bar{display:flex;align-items:center;gap:8px;background:rgba(15,20,35,.55);padding:5px 10px 5px 6px;border-radius:999px;backdrop-filter:blur(4px)}
+.bar i{font-style:normal;font-size:16px;width:20px;text-align:center}
+.bar .t{width:clamp(90px,16vw,150px);height:10px;border-radius:99px;background:rgba(255,255,255,.18);overflow:hidden}
+.bar .t b{display:block;height:100%;border-radius:99px;transition:width .3s}
+.bar.low{animation:pulse .8s infinite}
+@keyframes pulse{50%{background:rgba(200,40,40,.6)}}
+/* topo direito */
+#top{right:12px;top:12px;display:flex;gap:8px;align-items:center}
+.pill{background:rgba(15,20,35,.6);border-radius:999px;padding:8px 14px;font-weight:700;font-size:15px;backdrop-filter:blur(4px);border:0;color:#fff}
+button.pill{cursor:pointer;min-width:44px;min-height:40px}
+/* objetivo */
+#goal{left:50%;top:12px;transform:translateX(-50%);background:rgba(255,236,190,.92);color:#4a2e12;padding:8px 16px;border-radius:14px;font-weight:700;font-size:14px;max-width:48vw;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.25);pointer-events:none}
+#goal small{display:block;font-weight:600;opacity:.75;font-size:12px}
+/* mochila (barra de itens) */
+#bag{left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:56vw;pointer-events:none}
+.slot{min-width:52px;height:52px;padding:0 8px;border-radius:12px;background:rgba(15,20,35,.6);display:flex;align-items:center;justify-content:center;gap:4px;font-size:22px;position:relative;backdrop-filter:blur(4px)}
+.slot span{font-size:13px;font-weight:800}
+.slot.tool{background:rgba(255,200,90,.35)}
+.slot.food{cursor:pointer;pointer-events:auto;outline:2px solid rgba(126,224,181,.6)}
+/* botões de ação */
+#acts{right:16px;bottom:16px;display:flex;align-items:flex-end;gap:12px}
+#bAct{width:96px;height:96px;border-radius:50%;border:4px solid rgba(255,255,255,.85);background:rgba(255,190,80,.85);font-size:40px;color:#3b2306;box-shadow:0 8px 24px rgba(0,0,0,.35);cursor:pointer}
+#bAct.off{background:rgba(120,120,140,.5);border-color:rgba(255,255,255,.4)}
+.sbtn{width:58px;height:58px;border-radius:50%;border:3px solid rgba(255,255,255,.7);background:rgba(15,20,35,.65);font-size:26px;color:#fff;cursor:pointer}
+#camb{left:16px;bottom:16px;display:none;gap:10px}
+body.pc #camb{display:none!important}
+body.touch #camb{display:flex;left:auto;right:140px;bottom:120px}
+/* rótulo do alvo */
+#label{position:fixed;z-index:4;transform:translate(-50%,-100%);background:rgba(15,20,35,.75);padding:6px 12px;border-radius:10px;font-weight:700;font-size:14px;white-space:nowrap;pointer-events:none;display:none}
+#label .k{background:#ffcf70;color:#3b2306;border-radius:6px;padding:1px 7px;margin-right:6px}
+body.touch #label .k{display:none}
+#hpw{position:fixed;z-index:4;transform:translate(-50%,-100%);width:70px;height:7px;background:rgba(0,0,0,.4);border-radius:9px;overflow:hidden;display:none;pointer-events:none}
+#hpw b{display:block;height:100%;background:#ff7a5a}
+/* joystick */
+#joy{position:fixed;z-index:6;width:130px;height:130px;margin:-65px 0 0 -65px;border-radius:50%;background:rgba(255,255,255,.12);border:3px solid rgba(255,255,255,.35);display:none;pointer-events:none}
+#joy b{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:rgba(255,255,255,.7)}
+/* toast e números */
+#toast{left:50%;top:70px;transform:translateX(-50%);background:rgba(15,20,35,.85);padding:10px 18px;border-radius:12px;font-weight:700;font-size:15px;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center;max-width:80vw}
+#toast.on{opacity:1}
+.pop{position:fixed;z-index:6;font-weight:800;font-size:18px;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.6);pointer-events:none;animation:up 1.1s ease-out forwards}
+@keyframes up{to{transform:translate(-50%,-60px);opacity:0}}
+/* painéis */
+#panel{position:fixed;inset:0;z-index:10;background:rgba(5,10,20,.55);display:none;align-items:center;justify-content:center;padding:14px}
+#panel .box{width:min(720px,100%);max-height:92vh;overflow:auto;background:#fff6e2;color:#3b2a14;border-radius:22px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+#panel h2{margin:0 0 4px;font-size:22px;display:flex;justify-content:space-between;align-items:center}
+#panel .x{border:0;background:#e9c98f;color:#3b2a14;font-size:20px;width:44px;height:44px;border-radius:12px;cursor:pointer}
+.sub{font-size:13px;opacity:.75;margin-bottom:10px}
+.rec{display:flex;align-items:center;gap:12px;padding:10px;border-radius:14px;background:#fff;margin-top:8px;border:2px solid #f0dcb4}
+.rec .ic{font-size:30px;width:44px;text-align:center}
+.rec .tx{flex:1;font-size:14px;line-height:1.35}
+.rec .tx b{font-size:15px}
+.rec .c{display:inline-block;margin-right:8px;font-weight:700}
+.rec .c.no{color:#c0392b}
+.rec button{border:0;border-radius:12px;background:#ffb84d;color:#3b2306;font-weight:800;font-size:15px;min-width:92px;min-height:44px;cursor:pointer}
+.rec button:disabled{background:#ddd;color:#888;cursor:default}
+.rec.done{opacity:.55}
+.tabs{display:flex;gap:6px;margin:6px 0 4px;flex-wrap:wrap}
+.tabs button{border:0;border-radius:10px;padding:8px 12px;background:#f0dcb4;color:#5a3a16;font-weight:700;cursor:pointer;min-height:40px}
+.tabs button.on{background:#ffb84d;color:#3b2306}
+/* tela inicial / fim */
+#start,#end,#dead{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;background:radial-gradient(circle at 50% 40%,#2b4a6e,#0f1a33)}
+#start h1,#end h1{font-size:clamp(40px,8vw,84px);margin:0;color:#ffe9a8;text-shadow:0 6px 0 #5a2e12,0 12px 30px rgba(0,0,0,.5);letter-spacing:-1px}
+#start p{max-width:560px;opacity:.85;line-height:1.5}
+#start .go,#end .go{margin-top:18px;border:0;border-radius:16px;background:#ffb84d;color:#3b2306;font-weight:800;font-size:20px;padding:16px 36px;cursor:pointer;box-shadow:0 8px 0 #b8741c}
+#start .bar2{width:240px;height:10px;background:rgba(255,255,255,.2);border-radius:9px;overflow:hidden;margin-top:16px}
+#start .bar2 i{display:block;height:100%;width:0;background:#ffb84d;transition:width .2s}
+#start .keys{font-size:13px;opacity:.7;margin-top:14px}
+#end,#dead{display:none;background:rgba(10,15,30,.82)}
+#dead h2{font-size:34px;margin:0 0 6px}
+#rot{position:fixed;inset:0;z-index:30;background:#0f1a33;display:none;align-items:center;justify-content:center;flex-direction:column;font-size:18px;text-align:center;padding:20px}
+@media (orientation:portrait) and (max-width:900px){body.touch #rot{display:flex}}
+@media (max-height:480px){.slot{min-width:44px;height:44px;font-size:19px}#bAct{width:82px;height:82px;font-size:34px}.sbtn{width:50px;height:50px;font-size:22px}#goal{font-size:12px;padding:6px 12px}}
+</style>
+</head>
+<body>
+<div id="start">
+  <h1>Driftwood Isle</h1>
+  <p>Seu barco afundou. Sobreviva na ilha: junte recursos, crie ferramentas, acenda uma fogueira antes da noite… e conserte o bote salva-vidas para escapar.</p>
+  <div class="bar2"><i id="lbar"></i></div>
+  <div id="lmsg" style="margin-top:8px;font-size:14px;opacity:.75">Carregando a ilha…</div>
+  <button class="go" id="bGo" style="display:none">Jogar</button>
+  <div class="keys" id="keys">PC: WASD andar · Shift correr · E/Espaço ação · C criar · Q/R ou arrastar o mouse gira a câmera</div>
+</div>
+<div id="rot">📱↻<br>Gire o celular para jogar deitado</div>
+
+<div class="ui" id="stats">
+  <div class="bar" id="sV"><i>❤️</i><div class="t"><b style="background:#ff6b6b"></b></div></div>
+  <div class="bar" id="sF"><i>🍖</i><div class="t"><b style="background:#ffb84d"></b></div></div>
+  <div class="bar" id="sS"><i>💧</i><div class="t"><b style="background:#5ac8fa"></b></div></div>
+</div>
+<div class="ui" id="goal"></div>
+<div class="ui" id="top">
+  <div class="pill" id="clock">☀️ Dia 1</div>
+  <button class="pill" id="bMenu" aria-label="Menu">☰</button>
+</div>
+<div class="ui" id="bag"></div>
+<div class="ui" id="camb"><button class="sbtn" id="bRotL" aria-label="Girar câmera">⟲</button><button class="sbtn" id="bRotR" aria-label="Girar câmera">⟳</button></div>
+<div class="ui" id="acts">
+  <button class="sbtn" id="bCraft" aria-label="Criar">🛠️</button>
+  <button id="bAct" class="off" aria-label="Ação">✋</button>
+</div>
+<div id="label"></div>
+<div id="hpw"><b></b></div>
+<div id="joy"><b></b></div>
+<div class="ui" id="toast"></div>
+<div id="panel"><div class="box" id="pbox"></div></div>
+<div id="dead"><h2>Você desmaiou…</h2><p id="deadMsg">Acordou de volta, mas perdeu parte dos recursos.</p></div>
+<div id="end"><h1>Você escapou!</h1><p id="endMsg"></p><p style="opacity:.8">Fim da versão 0.1 · Novas ilhas na próxima versão.</p><button class="go" id="bAgain">Continuar explorando</button></div>
+
+<script src="three.min.js"></script>
+<script>window.createImageBitmap=undefined;</script>
+<script src="GLTFLoader.js"></script>
+<script src="models.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
