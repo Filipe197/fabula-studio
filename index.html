@@ -414,7 +414,13 @@ footer{border-top:1px solid rgba(255,255,255,.06);overflow:hidden}
     var lbl = g.modelo === 'gratis' ? (g.link_jogar ? 'Jogar grátis' : 'Baixar grátis') : g.modelo === 'doacao' ? 'Baixar · pague quanto quiser' : ('Comprar' + (g.preco ? ' · ' + g.preco : ''));
     if (g.status !== 'lancado' && link === '#') lbl = g.modelo === 'pago' ? 'Lista de desejos em breve' : 'Em breve';
     var c = MCOL[g.modelo] || MCOL.gratis;
-    return '<a class="btn" href="' + esc(link) + '"' + (link !== '#' ? ' target="_blank" rel="noopener"' : '') + ' style="background:' + c[0] + ';color:' + c[1] + '!important">' + esc(lbl) + '</a>';
+    var main = '<a class="btn" href="' + esc(link) + '"' + (link !== '#' ? ' target="_blank" rel="noopener"' : '') + ' style="flex:1 1 auto;background:' + c[0] + ';color:' + c[1] + '!important">' + esc(lbl) + '</a>';
+    /* jogo com versão no navegador E download: mostra os dois botões */
+    var extra = '';
+    if (g.link_jogar && g.link_download) extra += '<a class="btn btn-ghost" href="' + esc(g.link_download) + '" download style="flex:1 1 auto"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>' + (/\.apk(\?|$)/i.test(g.link_download) ? 'Baixar APK' : 'Baixar') + '</a>';
+    if ((g.link_jogar || g.link_download) && g.link_itch) extra += '<a class="btn btn-ghost" href="' + esc(g.link_itch) + '" target="_blank" rel="noopener" style="flex:1 1 auto">itch.io</a>';
+    if ((g.link_jogar || g.link_download || g.link_itch) && g.link_steam) extra += '<a class="btn btn-ghost" href="' + esc(g.link_steam) + '" target="_blank" rel="noopener" style="flex:1 1 auto">Steam</a>';
+    return extra ? '<div style="display:flex;flex-wrap:wrap;gap:10px">' + main + extra + '</div>' : main;
   }
 
   var games = [], posts = [], cfg = {}, tab = 0, filter = 'todos', amt = 10, shot = 0, feat = null;
