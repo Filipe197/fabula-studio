@@ -6,7 +6,7 @@
    tudo é salvo só no seu navegador.
    ========================================================= */
 window.FABULA_CONFIG = {
-  SUPABASE_URL: "",       // ex.: "https://abcdefgh.supabase.co"
-  SUPABASE_ANON_KEY: "",  // a chave "anon public"
+  SUPABASE_URL: "https://wvusptxwvcevswyvnhiz.supabase.co",       // ex.: "https://abcdefgh.supabase.co"
+  SUPABASE_ANON_KEY: "sb_publishable_zfGoiLMI2Agcpyvmk3dF0g_JyUFr-FR",  // a chave "anon public"
   BUCKET: "midia"         // nome do bucket de imagens
 };
