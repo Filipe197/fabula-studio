@@ -287,7 +287,8 @@ th{color:var(--tx3);font-size:12px;letter-spacing:.08em;text-transform:uppercase
           var img = g.capa || (g.galeria && g.galeria[0] && g.galeria[0].url);
           return '<div class="item' + (g.visivel === false ? ' hide' : '') + '">' +
             (img ? '<img class="thumb" src="' + esc(img) + '" alt="">' : '<div class="thumb" style="color:' + esc(g.cor) + '">' + esc(g.titulo) + '</div>') +
-            '<div class="info"><b>' + esc(g.titulo) + '</b><div class="tags"><span class="tag m-' + g.modelo + '">' + MODEL[g.modelo] + '</span><span class="tag">' + esc(STATUS[g.status] || '') + '</span>' + (g.em_destaque ? '<span class="tag" style="color:#7EE0B5">Em destaque</span>' : '') + (g.visivel === false ? '<span class="tag">Oculto</span>' : '') + '</div></div>' +
+            '<div class="info"><b>' + esc(g.titulo) + '</b><div class="tags"><span class="tag m-' + g.modelo + '">' + MODEL[g.modelo] + '</span><span class="tag">' + esc(STATUS[g.status] || '') + '</span>' + (g.em_destaque ? '<span class="tag" style="color:#7EE0B5">Em destaque</span>' : '') + (g.visivel === false ? '<span class="tag">Oculto</span>' : '') + '</div>' +
+            '<div class="tags" style="margin-top:6px"><span class="tag" title="Vezes que abriram o jogo no navegador (1 por pessoa por dia)">▶ ' + (g.jogadas || 0).toLocaleString('pt-BR') + ' jogada' + ((g.jogadas || 0) === 1 ? '' : 's') + '</span><span class="tag" title="Cliques em Baixar">⬇ ' + (g.downloads || 0).toLocaleString('pt-BR') + ' download' + ((g.downloads || 0) === 1 ? '' : 's') + '</span>' + (g.slug ? '<a class="tag" style="text-decoration:none" href="/jogos/' + esc(g.slug) + '" target="_blank" rel="noopener">Ver página ↗</a>' : '') + '</div></div>' +
             '<div class="acts"><button class="btn b-icon" data-a="up" data-i="' + i + '" aria-label="Subir"' + (i === 0 ? ' disabled' : '') + '>' + I.up + '</button><button class="btn b-icon" data-a="down" data-i="' + i + '" aria-label="Descer"' + (i === jogos.length - 1 ? ' disabled' : '') + '>' + I.down + '</button>' +
             '<label class="sw" title="Visível no site"><input type="checkbox" data-a="vis" data-i="' + i + '"' + (g.visivel !== false ? ' checked' : '') + ' aria-label="Visível no site"><span></span></label>' +
             '<button class="btn b-ghost" data-a="edit" data-i="' + i + '">' + I.edit + 'Editar</button></div></div>';
@@ -377,7 +378,7 @@ th{color:var(--tx3);font-size:12px;letter-spacing:.08em;text-transform:uppercase
     cur = g ? JSON.parse(JSON.stringify(g)) : {
       titulo: '', genero: '', modelo: 'gratis', preco: '', status: 'producao', status_texto: 'Em desenvolvimento', cor: COLORS[jogos.length % COLORS.length],
       resumo: '', descricao: '', destaques: [], plataformas: [], capa: '', capa_vitrine: '', icone: '', galeria: [],
-      link_jogar: '', link_download: '', link_steam: '', link_itch: '', em_destaque: false, visivel: true, ordem: jogos.length + 1
+      link_jogar: '', link_download: '', link_steam: '', link_itch: '', slug: '', video: '', em_destaque: false, visivel: true, ordem: jogos.length + 1
     };
     var c = cur;
     var html =
@@ -397,10 +398,12 @@ th{color:var(--tx3);font-size:12px;letter-spacing:.08em;text-transform:uppercase
         return '<label><input type="checkbox" name="plat" value="' + esc(p) + '"' + ((c.plataformas || []).indexOf(p) >= 0 ? ' checked' : '') + '><span>' + esc(p) + '</span></label>';
       }).join('') + '</div></div></fieldset>' +
       '<fieldset><legend>Links</legend><div class="g2">' +
-      '<label class="f"><span>Jogar no navegador</span><input type="url" name="link_jogar" value="' + esc(c.link_jogar) + '" placeholder="https://..."></label>' +
-      '<label class="f"><span>Download direto (APK, .zip)</span><input type="url" name="link_download" value="' + esc(c.link_download) + '" placeholder="https://..."></label>' +
-      '<label class="f"><span>Página na Steam</span><input type="url" name="link_steam" value="' + esc(c.link_steam) + '" placeholder="https://store.steampowered.com/..."></label>' +
-      '<label class="f"><span>Página no itch.io</span><input type="url" name="link_itch" value="' + esc(c.link_itch) + '" placeholder="https://fabula.itch.io/..."></label>' +
+      '<label class="f"><span>Jogar no navegador</span><input type="text" name="link_jogar" value="' + esc(c.link_jogar) + '" placeholder="https://..."></label>' +
+      '<label class="f"><span>Download direto (APK, .zip)</span><input type="text" name="link_download" value="' + esc(c.link_download) + '" placeholder="https://..."></label>' +
+      '<label class="f"><span>Página na Steam</span><input type="text" name="link_steam" value="' + esc(c.link_steam) + '" placeholder="https://store.steampowered.com/..."></label>' +
+      '<label class="f"><span>Endereço da página do jogo</span><input type="text" name="slug" value="' + esc(c.slug || '') + '" placeholder="Gerado pelo nome (ex.: saucer-siege)"><small>Fica em /jogos/<b>' + esc(c.slug || 'nome-do-jogo') + '</b>. Use só letras minúsculas, números e hífen.</small></label>' +
+      '<label class="f"><span>Vídeo curto (YouTube ou .mp4)</span><input type="text" name="video" value="' + esc(c.video || '') + '" placeholder="https://youtu.be/... ou img/trailer.mp4"><small>Aparece na página do jogo.</small></label>' +
+      '<label class="f"><span>Página no itch.io</span><input type="text" name="link_itch" value="' + esc(c.link_itch) + '" placeholder="https://fabula.itch.io/..."></label>' +
       '</div></fieldset>' +
       '<fieldset><legend>Visual</legend>' +
       '<div class="f"><span>Cor do jogo (usada na vitrine)</span><div class="colors" id="colors">' + COLORS.map(function (x) { return '<button type="button" data-c="' + x + '" style="background:' + x + '" class="' + (c.cor === x ? 'on' : '') + '" aria-label="Cor ' + x + '"></button>'; }).join('') + '<input type="color" id="colorIn" value="' + esc(c.cor) + '" aria-label="Outra cor"></div></div>' +
@@ -447,7 +450,8 @@ th{color:var(--tx3);font-size:12px;letter-spacing:.08em;text-transform:uppercase
   }
   function readGame() {
     var B = $('edBody'), v = function (n) { var el = B.elements[n]; return el ? String(el.value).trim() : ''; };
-    ['titulo', 'genero', 'resumo', 'descricao', 'modelo', 'preco', 'status', 'status_texto', 'link_jogar', 'link_download', 'link_steam', 'link_itch'].forEach(function (k) { cur[k] = v(k); });
+    ['titulo', 'genero', 'resumo', 'descricao', 'modelo', 'preco', 'status', 'status_texto', 'link_jogar', 'link_download', 'link_steam', 'link_itch', 'video'].forEach(function (k) { cur[k] = v(k); });
+    cur.slug = FB.slugify(v('slug') || cur.titulo);
     cur.destaques = v('destaques').split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
     cur.plataformas = [].slice.call(B.querySelectorAll('input[name=plat]:checked')).map(function (x) { return x.value; });
     cur.visivel = B.elements.visivel.checked; cur.em_destaque = B.elements.em_destaque.checked;

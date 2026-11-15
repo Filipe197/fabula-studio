@@ -13,7 +13,7 @@
   var SEED = {
     jogos: [
       {
-        id: 'j1', titulo: 'Harvest Hollow', genero: 'Fazenda 3D · Casual', modelo: 'gratis', preco: '',
+        id: 'j1', slug: 'harvest-hollow', jogadas: 0, downloads: 0, video: '', titulo: 'Harvest Hollow', genero: 'Fazenda 3D · Casual', modelo: 'gratis', preco: '',
         status: 'lancado', status_texto: 'Disponível', cor: '#7EE0B5',
         resumo: 'Plante, crie animais e transforme sua fazenda numa vila cheia de vida.',
         descricao: 'Plante, crie animais, produza nas fábricas e veja sua fazenda virar uma vila com mercado, trem de carga e eventos especiais ao longo do ano. Leve: o APK tem menos de 7 MB e também roda direto no navegador.',
@@ -104,6 +104,11 @@
 
     save: async function (table, obj) {
       obj = clone(obj);
+      if (table === 'jogos') {
+        /* contadores são somados pelo banco; nunca enviar do painel */
+        delete obj.jogadas; delete obj.downloads;
+        if (!obj.slug) obj.slug = FB.slugify(obj.titulo);
+      }
       if (sb) {
         if (!obj.id) delete obj.id;
         var r = obj.id
@@ -204,6 +209,15 @@
       var u = await FB.user(); if (!u) return null;
       var r = await sb.from('saves').select('dados,seen,atualizado_em').eq('user_id', u.id).eq('jogo', jogo).maybeSingle();
       return r.error ? null : r.data;
+    },
+    /* "Saucer Siege" -> "saucer-siege" (endereço da página do jogo) */
+    slugify: function (t) {
+      return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    },
+    /* soma 1 jogada ou download (tipo: 'jogada' | 'download') */
+    registrar: function (slug, tipo) {
+      if (!sb || !slug) return;
+      sb.rpc('registrar_jogada', { p_slug: slug, p_tipo: tipo || 'jogada' }).then(function () {}, function () {});
     },
     totalPlayers: async function () {
       if (!sb) return 0;

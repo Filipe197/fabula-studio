@@ -103,3 +103,22 @@ No painel, edite o Harvest Hollow e coloque `/jogar/harvest-hollow/` no campo **
 5. No Supabase, em **Authentication → URL Configuration**:
    - Em **Site URL**, coloque `https://fabula-studio-theta.vercel.app`.
    - Em **Redirect URLs**, adicione `https://fabula-studio-theta.vercel.app/**`.
+
+---
+
+## Atualização 3 — contador, página de cada jogo e ranking
+
+1. **Rode `schema-v3.sql`** no Supabase (SQL Editor > New query > Run). Ele:
+   - cria o endereço (`slug`) de cada jogo, o campo de vídeo e os contadores;
+   - cria o ranking online do Saucer Siege;
+   - preenche a galeria e o vídeo do Saucer Siege (só se estiverem vazios).
+2. **Contador de jogadas:** cada jogo no navegador conta 1 jogada por pessoa por dia
+   (arquivo `js/jogada.js`). Os cliques em "Baixar" contam como download.
+   Os números aparecem no painel, na lista de jogos.
+3. **Página de cada jogo:** `/jogos/<endereço>`, por exemplo `/jogos/saucer-siege`.
+   É montada no servidor (`api/jogo.js` + `vercel.json`), então o link mostra
+   título, descrição e imagem no WhatsApp e no Google.
+   No painel, cada jogo tem os campos "Endereço da página do jogo" e "Vídeo curto"
+   (link do YouTube ou um .mp4 do site).
+4. **Ranking:** só jogadores logados com Google aparecem, com primeiro nome e inicial.
+   Cada pessoa tem uma linha, que só muda quando ela bate o próprio recorde.

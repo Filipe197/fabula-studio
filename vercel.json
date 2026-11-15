@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/jogos/:slug", "destination": "/api/jogo?slug=:slug" },
+    { "source": "/jogos/:slug/", "destination": "/api/jogo?slug=:slug" }
+  ]
+}
