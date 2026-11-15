@@ -43,6 +43,18 @@ header{position:sticky;top:0;z-index:50;background:rgba(9,12,24,.72);backdrop-fi
 .links a{color:#C9CEE4;font-weight:500;font-size:15px;padding:12px 14px}
 .links a:hover{color:#fff}
 .links .btn{padding:12px 22px;border-radius:999px;font-size:15px;margin-left:6px}
+.acct{position:relative;margin-left:6px}
+.acct > button{display:inline-flex;align-items:center;gap:10px;min-height:46px;padding:0 16px 0 6px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:#fff;font-weight:600;font-size:15px;cursor:pointer}
+.acct > button.in{padding:0 16px}
+.acct .av{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#2A3260;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
+.acct .dd{position:absolute;right:0;top:calc(100% + 10px);width:300px;padding:16px;border-radius:20px;background:#141A33;border:1px solid rgba(255,255,255,.12);box-shadow:0 30px 70px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:10px;z-index:60}
+.acct .dd[hidden]{display:none}
+.acct .dd b{color:#fff;font-size:16px}
+.acct .dd small{color:var(--tx3);font-size:13px;word-break:break-all}
+.acct .dd .pg{padding:12px;border-radius:14px;background:rgba(126,224,181,.08);border:1px solid rgba(126,224,181,.25);font-size:14px;color:#CFF5E3;line-height:1.5}
+.acct .dd a,.acct .dd button.l{display:flex;align-items:center;min-height:44px;padding:0 12px;border-radius:12px;color:#E9ECF7;font-weight:600;font-size:15px;background:none;border:0;cursor:pointer;text-align:left}
+.acct .dd a:hover,.acct .dd button.l:hover{background:rgba(255,255,255,.06)}
+@media(max-width:860px){.acct{margin:8px 0 0}.acct > button{width:100%;justify-content:flex-start}.acct .dd{position:static;width:auto;margin-top:8px}}
 .burger{display:none;background:none;border:1px solid var(--line);border-radius:12px;width:46px;height:46px;color:#fff;cursor:pointer;align-items:center;justify-content:center}
 @media(max-width:860px){
   .burger{display:inline-flex}
@@ -256,6 +268,7 @@ footer{border-top:1px solid rgba(255,255,255,.06);overflow:hidden}
       <a href="#destaque" id="navFeat">Destaque</a>
       <a href="#devlog">Novidades</a>
       <a href="#apoie">Apoie</a>
+      <div class="acct" id="acct" hidden></div>
       <a class="btn btn-acc" href="#universo">Jogar agora</a>
     </nav>
   </div>
@@ -552,6 +565,34 @@ footer{border-top:1px solid rgba(255,255,255,.06);overflow:hidden}
   var io = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { threshold: .12 }) : null;
   [].forEach.call(document.querySelectorAll('.reveal'), function (el) { io ? io.observe(el) : el.classList.add('in'); });
 
+  /* ---------- conta (login com Google) ---------- */
+  var GICON = '<svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
+  async function renderAcct() {
+    var box = $('acct');
+    if (FB.mode === 'demo') { box.hidden = true; return; }
+    box.hidden = false;
+    var u = await FB.user();
+    if (!u) {
+      box.innerHTML = '<button type="button" class="in" id="acctIn">' + GICON + 'Entrar</button>';
+      $('acctIn').onclick = function () { FB.loginGoogle(location.href.split('#')[0]).catch(function (e) { alert(e.message); }); };
+      return;
+    }
+    var md = u.user_metadata || {}, nome = md.full_name || md.name || u.email, foto = md.avatar_url || md.picture;
+    var r = await Promise.all([FB.isAdmin(), FB.getSave('harvest-hollow')]);
+    var adm = r[0], sv = r[1], prog = 'Você ainda não jogou o Harvest Hollow com esta conta.';
+    if (sv && sv.dados) {
+      var xp = sv.dados.xp || 0, l = 1; while (xp >= 25 * l * l) l++;
+      prog = '<b style="font-size:14px;color:#7EE0B5">Harvest Hollow</b><br>Nível ' + l + ' · 💰' + (sv.dados.coins || 0).toLocaleString('pt-BR') + '<br><span style="color:var(--tx3)">Salvo em ' + new Date(sv.atualizado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) + '</span>';
+    }
+    box.innerHTML = '<button type="button" id="acctBtn" aria-expanded="false" aria-haspopup="true">' + (foto ? '<img class="av" src="' + esc(foto) + '" alt="" referrerpolicy="no-referrer">' : '<span class="av">' + esc(String(nome).charAt(0).toUpperCase()) + '</span>') + esc(String(nome).split(' ')[0]) + '</button>' +
+      '<div class="dd" id="acctDd" hidden><div><b>' + esc(nome) + '</b><br><small>' + esc(u.email || '') + '</small></div><div class="pg">' + prog + '</div>' +
+      '<a href="jogar/harvest-hollow/">Jogar Harvest Hollow</a>' + (adm ? '<a href="admin.html">Painel do estúdio</a>' : '') + '<button type="button" class="l" id="acctOut">Sair</button></div>';
+    $('acctBtn').onclick = function (e) { e.stopPropagation(); var dd = $('acctDd'); dd.hidden = !dd.hidden; this.setAttribute('aria-expanded', !dd.hidden); };
+    $('acctOut').onclick = async function () { await FB.logout(); renderAcct(); };
+    if (!renderAcct.bound) renderAcct.bound = document.addEventListener('click', function (e) { var dd = $('acctDd'); if (dd && !dd.hidden && !e.target.closest('#acct')) { dd.hidden = true; $('acctBtn').setAttribute('aria-expanded', 'false'); } }) || true;
+  }
+  if (FB.sb) FB.sb.auth.onAuthStateChange(function (ev) { if (ev === 'SIGNED_IN' || ev === 'SIGNED_OUT') renderAcct(); });
+
   /* ---------- carregar ---------- */
   async function load() {
     try {
@@ -562,6 +603,7 @@ footer{border-top:1px solid rgba(255,255,255,.06);overflow:hidden}
     }
     feat = games.filter(function (g) { return g.em_destaque; })[0] || null;
     renderHero(); renderTabs(); renderGrid(); renderFeat(); renderPosts(); renderSup(); renderFoot();
+    renderAcct();
     if (FB.mode === 'demo') {
       var d = document.createElement('div'); d.className = 'demo';
       d.innerHTML = 'Modo demonstração · <a href="admin.html">abrir painel</a>';

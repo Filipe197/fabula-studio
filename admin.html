@@ -154,6 +154,7 @@ th{color:var(--tx3);font-size:12px;letter-spacing:.08em;text-transform:uppercase
     <label class="f"><span>Senha</span><input type="password" id="lpass" autocomplete="current-password" required></label>
     <div class="err" id="lerr" role="alert"></div>
     <button class="btn b-acc" type="submit" id="lbtn">Entrar</button>
+    <button class="btn b-ghost" type="button" id="gbtn" style="display:none"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Entrar com Google</button>
     <a href="index.html" style="text-align:center;font-size:14px;padding:8px">Voltar ao site</a>
   </form>
 </section>
@@ -201,7 +202,7 @@ th{color:var(--tx3);font-size:12px;letter-spacing:.08em;text-transform:uppercase
   var PLATS = ['Navegador', 'Android', 'iOS', 'Windows', 'Steam', 'itch.io', 'Site'];
   var COLORS = ['#7EE0B5', '#FFC566', '#C9A4FF', '#FF8A7A', '#7CC8FF', '#FF9ED2'];
   var TAGS = ['Atualização', 'Lançamento', 'Evento', 'Devlog'];
-  var view = 'jogos', jogos = [], posts = [], insc = [], cur = null, curType = null;
+  var view = 'jogos', jogos = [], posts = [], insc = [], cur = null, curType = null, players = 0;
   var I = {
     edit: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
     up: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>',
@@ -231,10 +232,21 @@ th{color:var(--tx3);font-size:12px;letter-spacing:.08em;text-transform:uppercase
     busy($('lbtn'), false);
   });
   $('logout').addEventListener('click', async function () { await FB.logout(); location.reload(); });
+  if (FB.mode !== 'demo') {
+    $('gbtn').style.display = '';
+    $('gbtn').onclick = async function () { try { await FB.loginGoogle(location.href.split('#')[0]); } catch (err) { $('lerr').textContent = err.message; } };
+  }
 
   async function start() {
     var u = await FB.user();
     if (!u) { $('login').style.display = 'flex'; $('app').style.display = 'none'; return; }
+    /* só o administrador entra; qualquer outra conta é barrada */
+    if (!(await FB.isAdmin())) {
+      await FB.logout();
+      $('login').style.display = 'flex'; $('app').style.display = 'none';
+      $('lerr').textContent = 'A conta ' + (u.email || '') + ' não tem acesso ao painel.';
+      return;
+    }
     $('login').style.display = 'none'; $('app').style.display = 'block';
     $('who').textContent = FB.mode === 'demo' ? 'Modo demonstração' : u.email;
     await reload(); render();
@@ -244,6 +256,7 @@ th{color:var(--tx3);font-size:12px;letter-spacing:.08em;text-transform:uppercase
     try {
       var r = await Promise.all([FB.list('jogos', true), FB.list('posts', true), FB.listSubscribers()]);
       jogos = r[0]; posts = r[1]; insc = r[2];
+      players = await FB.totalPlayers() || 0;
     } catch (e) { toast('Erro ao carregar: ' + e.message, true); }
     $('cJ').textContent = jogos.length; $('cP').textContent = posts.length; $('cI').textContent = insc.length;
   }
@@ -269,7 +282,7 @@ th{color:var(--tx3);font-size:12px;letter-spacing:.08em;text-transform:uppercase
   function render() {
     var m = $('main');
     if (view === 'jogos') {
-      m.innerHTML = demoBar() + '<div class="top"><div><h1>Jogos</h1><p>A ordem aqui é a mesma do site.</p></div><button class="btn b-acc" id="newG">' + I.plus + 'Novo jogo</button></div>' +
+      m.innerHTML = demoBar() + '<div class="top"><div><h1>Jogos</h1><p>A ordem aqui é a mesma do site.' + (players ? ' · ' + players + ' jogador' + (players > 1 ? 'es' : '') + ' salvando na nuvem' : '') + '</p></div><button class="btn b-acc" id="newG">' + I.plus + 'Novo jogo</button></div>' +
         '<div class="list">' + (jogos.length ? jogos.map(function (g, i) {
           var img = g.capa || (g.galeria && g.galeria[0] && g.galeria[0].url);
           return '<div class="item' + (g.visivel === false ? ' hide' : '') + '">' +

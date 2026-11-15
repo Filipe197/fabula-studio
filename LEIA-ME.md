@@ -77,3 +77,29 @@ Outras coisas que dá para fazer no painel:
 ## Imagens do Harvest Hollow
 
 As imagens iniciais ficam na pasta `img/`. As que você enviar pelo painel vão para o Supabase Storage, no bucket `midia`.
+
+## Harvest Hollow no site
+
+O jogo fica em `jogar/harvest-hollow/`, e o endereço é `seusite.vercel.app/jogar/harvest-hollow/`.
+No painel, edite o Harvest Hollow e coloque `/jogar/harvest-hollow/` no campo **Jogar no navegador**.
+
+## Login com Google (jogadores)
+
+- **No jogo:** em ☰ Menu → **Entrar com Google**, o progresso passa a ser salvo na nuvem a cada 15 segundos e quando a aba é fechada. Em outro aparelho, o jogador entra com a mesma conta e continua de onde parou. Se os dois aparelhos tiverem progressos diferentes, o jogo pergunta qual manter.
+- **No site:** o botão **Entrar** no topo mostra o nível e as moedas salvas.
+- **No painel:** só entra o e-mail que está na tabela `admins`. Qualquer outra conta, Google ou não, é barrada.
+- **No APK:** o Google não permite login dentro do app Android desse tipo, então lá o botão não aparece e o save continua só no aparelho.
+
+### Configurar (uma vez só)
+
+1. No Supabase, vá em **SQL Editor** e rode o arquivo `schema-login.sql`.
+2. No **Google Cloud Console** (console.cloud.google.com):
+   1. Crie um projeto chamado `Fabula Studio`.
+   2. Em **APIs e serviços → Tela de permissão OAuth** (ou "Google Auth Platform"), escolha **Externo**, coloque o nome do app `Fabula Studio` e o seu e-mail, salve e clique em **Publicar app**.
+   3. Em **Credenciais → Criar credenciais → ID do cliente OAuth**, escolha o tipo **Aplicativo da Web**. Em **URIs de redirecionamento autorizados**, coloque `https://wvusptxwvcevswyvnhiz.supabase.co/auth/v1/callback`.
+   4. Copie o **ID do cliente** e a **Chave secreta do cliente**.
+3. No Supabase, em **Authentication → Sign In / Providers → Google**, ligue a opção, cole o ID e a chave e clique em **Save**.
+4. No Supabase, em **Authentication → Sign In / Providers**, ligue de novo **Allow new users to sign up**. Sem isso, os jogadores não conseguem criar conta. O painel continua protegido pela tabela `admins`.
+5. No Supabase, em **Authentication → URL Configuration**:
+   - Em **Site URL**, coloque `https://fabula-studio-theta.vercel.app`.
+   - Em **Redirect URLs**, adicione `https://fabula-studio-theta.vercel.app/**`.

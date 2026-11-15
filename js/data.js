@@ -28,7 +28,7 @@
           { url: 'img/hh_trator.jpg', legenda: 'Trator e veículos' },
           { url: 'img/hh_halloween.jpg', legenda: 'Evento de Halloween' }
         ],
-        link_jogar: '', link_download: '', link_steam: '', link_itch: '',
+        link_jogar: 'jogar/harvest-hollow/', link_download: '', link_steam: '', link_itch: '',
         em_destaque: true, visivel: true, ordem: 1
       },
       {
@@ -186,6 +186,30 @@
     resetDemo: function () { localStorage.removeItem(KEY); },
 
     /* ---------- login ---------- */
+    sb: sb,
+    /* entra com Google e volta para a página indicada */
+    loginGoogle: async function (voltar) {
+      if (!sb) throw new Error('Login indisponível no modo demonstração.');
+      var r = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: voltar || location.href.split('#')[0] } });
+      if (r.error) throw new Error(r.error.message);
+    },
+    /* true só para o e-mail cadastrado na tabela admins */
+    isAdmin: async function () {
+      if (!sb) return !!sessionStorage.getItem('fabula_demo_login');
+      var r = await sb.rpc('is_admin');
+      return !r.error && r.data === true;
+    },
+    getSave: async function (jogo) {
+      if (!sb) return null;
+      var u = await FB.user(); if (!u) return null;
+      var r = await sb.from('saves').select('dados,seen,atualizado_em').eq('user_id', u.id).eq('jogo', jogo).maybeSingle();
+      return r.error ? null : r.data;
+    },
+    totalPlayers: async function () {
+      if (!sb) return 0;
+      var r = await sb.rpc('total_jogadores');
+      return r.error ? null : r.data;
+    },
     login: async function (email, senha) {
       if (!sb) return { email: email || 'demo' };
       var r = await sb.auth.signInWithPassword({ email: email, password: senha });
