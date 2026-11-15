@@ -32,7 +32,7 @@ const LEVELS=[
  {name:'Fortaleza do Gelo',world:2,biome:'snow',coins:480,hp:2.0,
   paths:[[[0,6],[3,6],[3,1],[8,1],[8,4],[13,4],[13,7],[14,7]],[[11,0],[11,4],[13,4],[13,7],[14,7]]],
   deco:{tree:.11,rock:.06,crystal:.04,hill:.04},
-  waves:['a16:.55,b10:.4','s8:1.1,c4:1.4','d10:.8,b14:.35','c12:.85','s12:.9,b16:.3','X1:1,a16:.5','d12:.7,s8:.9','c14:.7,b20:.25','s16:.7','a30:.25,d10:.7','c16:.7,s12:.8','X1:1,s12:.9,c12:.8,b24:.25']},
+  waves:['a16:.55,b10:.4','s8:1.1,c4:1.4','d10:.8,b14:.35','c12:.85','s12:.9,b16:.3','a8:.7,X1:1.5','d12:.7,s8:.9','c14:.7,b20:.25','s16:.7','a30:.25,d10:.7','c16:.7,s12:.8','X1:1,s12:.9,c12:.8,b24:.25']},
 ];
 const ENDLESS={name:'Arena Infinita',world:0,biome:'grass',coins:300,hp:1,endless:true,
   paths:[[[0,1],[13,1],[13,4],[2,4],[2,7],[14,7]]],
@@ -60,6 +60,7 @@ const TOWERS={
    lv:[{dmg:14,rng:2.5,rate:1.1,chain:3,jump:1.5},{dmg:22,rng:2.7,rate:1.0,chain:4,jump:1.6},{dmg:34,rng:2.95,rate:.9,chain:6,jump:1.8}]},
 };
 const TORDER=['ballista','cannon','crystal','catapult','tesla'];
+const TTAG={ballista:'Atira rápido',cannon:'Dano em área',crystal:'Deixa lento · quebra escudo',catapult:'Área enorme, bem longe',tesla:'Acerta 3 em corrente'};
 
 // ---------- save ----------
 let save={v:2,stars:[0,0,0,0,0,0],best:0,bestWave:0,seen:0};
@@ -345,7 +346,7 @@ const bubbleGeo=new THREE.IcosahedronGeometry(.55,1);
 const bubbleMat=new THREE.MeshBasicMaterial({color:0x7fe6ff,transparent:true,opacity:.28,depthWrite:false});
 const iceGeo=new THREE.IcosahedronGeometry(.5,0);
 function spawnEnemy(k,d,ri){
-  const E=ENEMIES[k];const mult=G.hpMult;
+  const E=ENEMIES[k];const mult=E.boss&&!G.L.endless?G.hpMult*.4:G.hpMult;   // chefe das fases normais mais justo
   if(ri==null){ri=G.spawnN++%G.routes.length;if(E.boss)ri=0;}
   const bw=E.boss?1.8:1;
   const o=new THREE.Group();const m=M(E.model);m.scale.setScalar(E.sc);o.add(m);
@@ -667,7 +668,9 @@ function refreshPanel(){
     TORDER.forEach(type=>{const T=TOWERS[type];const locked=!unlocked(type);const can=!locked&&G.coins>=T.cost;
       const c=document.createElement('div');c.className='card'+(can?'':' off')+(locked?' lock':'');
       if(locked)c.dataset.lock='Fase '+(T.unlock+1);
-      c.innerHTML='<img src="'+THUMB[type+'1']+'"><b>'+T.name+'</b><span>🪙 '+T.cost+'</span>';
+      const L0=T.lv[0],bar=(lb,v,mx)=>'<div class="pw"><i>'+lb+'</i><u><s style="width:'+Math.max(8,Math.round(v/mx*100))+'%"></s></u></div>';
+      c.innerHTML='<img src="'+THUMB[type+'1']+'"><b>'+T.name+'</b><span>🪙 '+T.cost+'</span>'+
+        bar('Dano',L0.dmg,34)+bar('Alcance',L0.rng,4.4)+bar('Rapidez',1/L0.rate,1/.55)+'<em>'+TTAG[type]+'</em>';
       c.onpointerenter=()=>{if(!locked)showRange(panelCell[0],panelCell[1],T.lv[0].rng);};
       c.onpointerleave=()=>{rangeRing.visible=false;};
       c.onclick=()=>{if(locked){toast('Libera na fase '+(T.unlock+1));sfx('no');return;}
@@ -782,7 +785,8 @@ function update(dt){
       G.waveActive=false;
       if(G.bossWave){G.bossWave=false;playMusic(levelMusic());}
       if(G.wave>=totalWaves()){endLevel(true);}
-      else{const bonus=6+G.wave*2;G.coins+=bonus;if(G.L.endless)G.score+=50*G.wave;toast('Onda concluída! +'+bonus+' 🪙');sfx('coin');G.countdown=G.L.endless?10:15;}
+      else{const bonus=6+G.wave*2;G.coins+=bonus;if(G.L.endless)G.score+=50*G.wave;toast('Onda concluída! +'+bonus+' 🪙');sfx('coin');
+        if(!G.L.endless&&/X/.test(G.L.waves[G.wave]||''))setTimeout(()=>toast('⚠️ Nave-mãe na próxima onda! Guarde o Congelar e o Meteoro.'),1600);G.countdown=G.L.endless?10:15;}
       hudDirty=true;
     }
   }else if(G.countdown>0&&!G.over){const before=Math.ceil(G.countdown);G.countdown-=dt;if(Math.ceil(G.countdown)!==before)hudDirty=true;if(G.countdown<=0){G.countdown=0;startWave();}}
