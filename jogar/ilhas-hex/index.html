@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#1d5a78">
+<title>Ilhas Hex · Fabula Studio</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;background:#1d5a78;font-family:"Nunito","Trebuchet MS",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#fff}
+canvas{display:block;touch-action:none}
+.hud{position:fixed;inset:0;pointer-events:none}
+.hud>*{pointer-events:auto}
+.pill{background:rgba(16,48,66,.74);backdrop-filter:blur(6px);border:2px solid rgba(255,255,255,.16);border-radius:999px;padding:5px 13px;font-weight:900;font-size:16px;display:flex;align-items:center;gap:6px;box-shadow:0 3px 0 rgba(0,0,0,.22);white-space:nowrap}
+.pill small{font-size:11px;opacity:.75;font-weight:800}
+#stats{position:absolute;top:max(10px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));display:flex;gap:6px;flex-wrap:wrap;max-width:calc(100vw - 210px);align-items:flex-start}
+#topr{position:absolute;top:max(10px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));display:flex;gap:6px}
+#side{position:absolute;right:max(10px,env(safe-area-inset-right));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px}
+.btn{border:none;cursor:pointer;font:inherit;font-weight:900;color:#fff;border-radius:16px;padding:11px 18px;background:#3d8fd6;box-shadow:0 4px 0 #23629c;transition:transform .08s;font-size:16px}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #23629c}
+.btn.round{width:42px;height:42px;padding:0;border-radius:50%;font-size:18px;background:rgba(16,48,66,.8);box-shadow:0 3px 0 rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center}
+.btn.round.off{opacity:.45}
+.btn.green{background:#35b56a;box-shadow:0 4px 0 #20824a}
+.btn.orange{background:#f08a33;box-shadow:0 4px 0 #b8601a}
+.btn.ghost{background:rgba(255,255,255,.14);box-shadow:0 3px 0 rgba(0,0,0,.22)}
+.btn:disabled{filter:grayscale(.85) brightness(.85);cursor:default}
+/* bandeja de peças */
+#tray{position:absolute;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:flex-end;gap:8px;background:rgba(16,48,66,.8);backdrop-filter:blur(8px);border:2px solid rgba(255,255,255,.16);border-radius:24px;padding:8px 10px;box-shadow:0 6px 0 rgba(0,0,0,.22);max-width:calc(100vw - 16px)}
+.tc{position:relative;width:58px;height:58px;border-radius:16px;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.12);padding:0;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font:inherit}
+.tc img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+.tc.cur{width:84px;height:84px;background:rgba(255,255,255,.18);border-color:#ffd65c}
+.tc.cur b{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);background:#ffd65c;color:#20343f;font-size:11px;border-radius:99px;padding:1px 8px;white-space:nowrap}
+.tc.sel{border-color:#ffd65c;background:rgba(255,214,92,.25)}
+.tc.nx{opacity:.85}
+#undo,#ok{width:48px;height:48px;align-self:center}
+#ok{background:#35b56a;box-shadow:0 3px 0 #20824a;font-size:22px}
+#ok:disabled{opacity:.35}
+#undo i{position:absolute;top:-6px;right:-6px;background:#f08a33;border-radius:99px;font-style:normal;font-size:11px;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+#undo{position:relative}
+/* rótulos sobre o mapa */
+#labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.ql{position:absolute;transform:translate(-50%,-100%);background:#fff;color:#20343f;border-radius:14px;padding:2px 9px 2px 3px;display:flex;align-items:center;gap:3px;font-weight:900;font-size:14px;box-shadow:0 3px 0 rgba(0,0,0,.25);white-space:nowrap}
+.ql img{width:24px;height:24px}
+.ql::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:#fff;border-bottom:0}
+.ql.done{background:#ffd65c;animation:qd .9s ease-out forwards}
+@keyframes qd{50%{transform:translate(-50%,-140%) scale(1.25)}to{transform:translate(-50%,-220%) scale(.8);opacity:0}}
+.pv{position:absolute;transform:translate(-50%,-100%);font-weight:900;font-size:22px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.45),0 0 10px rgba(0,0,0,.25)}
+.pv.z{color:#d9e7ee;font-size:18px}
+.pop{position:absolute;font-weight:900;font-size:22px;color:#ffd65c;text-shadow:0 2px 0 rgba(0,0,0,.5);animation:pop 1s ease-out forwards;transform:translate(-50%,-50%);white-space:nowrap}
+@keyframes pop{to{transform:translate(-50%,-220%);opacity:0}}
+#toast{position:fixed;top:max(62px,calc(env(safe-area-inset-top) + 56px));left:50%;transform:translateX(-50%);background:rgba(16,48,66,.94);padding:9px 18px;border-radius:14px;font-weight:900;opacity:0;transition:opacity .25s;pointer-events:none;z-index:15;max-width:90vw;text-align:center}
+#toast.show{opacity:1}
+/* telas */
+.screen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;background:radial-gradient(ellipse at 50% 30%,rgba(60,150,190,.55),rgba(10,40,58,.9));z-index:10;overflow:hidden}
+.screen.show{display:flex}
+#menu{background:radial-gradient(ellipse at 50% 45%,rgba(10,40,58,.55),rgba(10,40,58,.15) 70%)}
+.box{display:flex;flex-direction:column;align-items:center;transform-origin:50% 50%;padding:12px;flex-shrink:0}
+.logo{font-size:60px;font-weight:900;letter-spacing:-1px;line-height:.95;text-shadow:0 5px 0 #1d6a8f,0 10px 24px rgba(0,0,0,.35)}
+.logo em{font-style:normal;color:#ffd65c}
+.sub{opacity:.8;font-weight:800;margin:8px 0 14px;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.mbtns{display:flex;flex-direction:column;gap:10px;width:280px}
+.mbtns .btn{font-size:18px;padding:13px 18px}
+.mbtns .btn small{display:block;font-size:12px;opacity:.85;font-weight:700}
+.rec{font-weight:800;opacity:.9;margin:0 0 14px;font-size:14px}
+.corner{position:fixed;top:max(10px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));display:flex;gap:6px;z-index:2}
+.big{font-size:40px;font-weight:900;margin:0 0 6px}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.card{background:rgba(16,48,66,.9);border:2px solid rgba(255,255,255,.14);border-radius:22px;padding:16px 18px;width:440px;text-align:left}
+.card h2{margin:0 0 8px;font-size:24px}
+.rules{list-style:none;margin:0 0 12px;padding:0;display:flex;flex-direction:column;gap:7px;font-size:14.5px;font-weight:700;line-height:1.35}
+.rules li{display:flex;gap:8px;align-items:center}
+.rules img{width:34px;height:34px;flex-shrink:0}
+.rules b{color:#ffd65c}
+.sts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 14px}
+.sts div{background:rgba(255,255,255,.08);border-radius:14px;padding:8px 12px;font-weight:800;font-size:13px}
+.sts b{display:block;font-size:22px;color:#ffd65c}
+#endMsg{font-weight:800;margin-bottom:10px;min-height:20px}
+#load{position:fixed;inset:0;background:#1d5a78;display:flex;align-items:center;justify-content:center;z-index:20;font-weight:900;font-size:20px}
+#viewBar{position:absolute;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);display:none;gap:8px}
+@media (max-height:440px){
+ .pill{font-size:14px;padding:4px 10px}.btn.round{width:38px;height:38px;font-size:16px}
+ .tc{width:48px;height:48px;border-radius:13px}.tc.cur{width:66px;height:66px}#undo,#ok{width:42px;height:42px}
+ #tray{padding:6px 8px;gap:6px;border-radius:20px}
+ #side{top:auto;bottom:max(10px,env(safe-area-inset-bottom));transform:none}
+}
+@media (max-width:420px){.tc{width:48px;height:48px}.tc.cur{width:72px;height:72px}#tray{gap:6px;padding:7px 8px}#undo,#ok{width:44px;height:44px}}
+@media (max-width:400px) and (orientation:portrait){#side{top:auto;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 104px);transform:none}}
+</style>
+</head>
+<body>
+<div id="load">Carregando…</div>
+<div class="hud" id="hud" style="display:none">
+  <div id="stats">
+    <div class="pill" id="pScore"><small>PONTOS</small> <span id="score">0</span></div>
+    <div class="pill" id="pStack"><small>PEÇAS</small> <span id="stack">0</span></div>
+    <div class="pill" id="pSeason"><span id="season">Primavera</span></div>
+  </div>
+  <div id="topr">
+    <button class="btn round" id="help" title="Guia">?</button>
+    <button class="btn round musR" title="Música">🎵</button>
+    <button class="btn round sndR" title="Efeitos">🔊</button>
+    <button class="btn round" id="pau" title="Menu">☰</button>
+  </div>
+  <div id="side">
+    <button class="btn round" id="rotL" title="Girar (Q)">⟲</button>
+    <button class="btn round" id="rotR" title="Girar (E)">⟳</button>
+    <button class="btn round" id="fit" title="Ver a ilha toda">⌂</button>
+  </div>
+  <div id="tray"></div>
+  <div id="viewBar"><button class="btn green" id="vAgain">↻ Jogar de novo</button><button class="btn" id="vMenu">☰ Menu</button></div>
+</div>
+<div id="labels"></div>
+<div id="toast"></div>
+
+<div class="screen" id="menu">
+  <div class="corner"><button class="btn round musR" title="Música">🎵</button><button class="btn round sndR" title="Efeitos">🔊</button></div>
+  <div class="box" id="menuBox">
+    <div class="logo">Ilhas <em>Hex</em></div>
+    <div class="sub">Fabula Studio · v0.1</div>
+    <div class="rec" id="rec"></div>
+    <div class="mbtns">
+      <button class="btn green" id="bCont">▶ Continuar<small id="contInfo"></small></button>
+      <button class="btn" id="bNew">Nova ilha<small>Peças contadas, busque o recorde</small></button>
+      <button class="btn orange" id="bFree">Modo livre<small>Peças infinitas, escolha o terreno</small></button>
+      <div class="row" style="flex-wrap:nowrap"><button class="btn ghost" id="bHelp" style="flex:1">Como jogar</button><button class="btn ghost" id="bGuide" style="flex:1">📖 Guia</button></div>
+    </div>
+  </div>
+</div>
+<div class="screen" id="pause">
+  <div class="box" id="pauseBox">
+    <div class="big">Pausado</div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn green" id="resume">▶ Continuar</button>
+      <button class="btn orange" id="restart">↻ Nova ilha</button>
+      <button class="btn" id="quit">☰ Menu</button>
+    </div>
+    <div class="row" style="margin-top:10px"><button class="btn ghost" id="pGuide">📖 Guia</button><button class="btn ghost" id="pHow">Como jogar</button></div>
+  </div>
+</div>
+<div class="screen" id="end">
+  <div class="box" id="endBox">
+    <div class="big" id="endT">Ilha completa!</div>
+    <div id="endMsg"></div>
+    <div class="sts" id="endS"></div>
+    <div class="row">
+      <button class="btn green" id="again">↻ Jogar de novo</button>
+      <button class="btn ghost" id="look">Ver minha ilha</button>
+      <button class="btn" id="tomenu">☰ Menu</button>
+    </div>
+  </div>
+</div>
+
+<script src="three.min.js"></script>
+<script src="GLTFLoader.js"></script>
+<script src="models.js"></script>
+<script src="audio.js"></script>
+<script src="fs-guide.js"></script>
+<script src="../../config.js"></script>
+<script src="../../js/jogada.js" data-jogo="ilhas-hex"></script>
+<script src="game.js"></script>
+</body>
+</html>
