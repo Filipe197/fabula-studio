@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Política de Privacidade · Fabula Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#090C18;color:#C9CEE4;font-family:Inter,system-ui,sans-serif;line-height:1.7}
+a{color:#FFC566}
+main{max-width:760px;margin:0 auto;padding:48px 24px 80px}
+h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;color:#fff;font-size:clamp(34px,5vw,48px);letter-spacing:-.03em;line-height:1.05;margin:24px 0 8px}
+h2{color:#fff;font-size:20px;margin:36px 0 8px}
+.top{display:inline-flex;align-items:center;gap:8px;font-weight:600;padding:10px 0}
+.muted{color:#8B93B5;font-size:14px}
+ul{padding-left:22px}
+</style>
+</head>
+<body>
+<main>
+  <a class="top" href="./">← Voltar para o Fabula Studio</a>
+  <h1>Política de Privacidade</h1>
+  <p class="muted">Última atualização: 15 de novembro de 2026</p>
+
+  <p>Esta política explica quais dados o Fabula Studio coleta no site e nos jogos disponíveis nele, para que usamos e como você pode pedir para apagá-los.</p>
+
+  <h2>1. Dados que coletamos</h2>
+  <ul>
+    <li><b>Login com Google:</b> quando você escolhe entrar, recebemos do Google o seu nome, e-mail e foto de perfil. Não recebemos sua senha.</li>
+    <li><b>Progresso dos jogos:</b> se você estiver logado, o progresso do jogo (por exemplo, nível, moedas e itens da sua fazenda) é salvo na nuvem para você continuar em outro aparelho.</li>
+    <li><b>Lista de novidades:</b> se você cadastrar seu e-mail para receber novidades, guardamos esse e-mail.</li>
+    <li><b>Dados no seu aparelho:</b> os jogos salvam o progresso no armazenamento do próprio navegador, mesmo sem login.</li>
+  </ul>
+  <p>Não usamos cookies de publicidade e não coletamos dados de pagamento. Doações e compras são feitas em plataformas externas (como itch.io, Steam ou o serviço de pagamento indicado), que têm suas próprias políticas.</p>
+
+  <h2>2. Para que usamos</h2>
+  <ul>
+    <li>Identificar sua conta e salvar seu progresso nos jogos.</li>
+    <li>Enviar novidades do estúdio, apenas se você se inscreveu.</li>
+  </ul>
+  <p>Não vendemos nem compartilhamos seus dados com terceiros para fins de marketing.</p>
+
+  <h2>3. Onde os dados ficam</h2>
+  <p>Os dados são armazenados no Supabase, nosso provedor de banco de dados, e o site é hospedado na Vercel. O login é feito pelo Google. Esses serviços processam os dados apenas para que o site funcione.</p>
+
+  <h2>4. Seus direitos</h2>
+  <p>Você pode, a qualquer momento, pedir para ver, corrigir ou apagar seus dados, incluindo sua conta e seu progresso salvo, e também cancelar o recebimento de novidades. Atendemos esses pedidos conforme a Lei Geral de Proteção de Dados (LGPD).</p>
+
+  <h2>5. Crianças</h2>
+  <p>Nossos jogos são para todas as idades, mas o login com Google segue as regras de idade da conta Google. Se você é responsável por uma criança e acredita que ela nos enviou dados, fale conosco para apagarmos.</p>
+
+  <h2>6. Contato</h2>
+  <p id="contato">Para qualquer pedido sobre seus dados, fale conosco <span id="mail">pelos canais indicados no rodapé do site</span>.</p>
+
+  <h2>7. Mudanças</h2>
+  <p>Se esta política mudar, atualizaremos esta página e a data no topo.</p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="js/data.js"></script>
+<script>
+/* mostra o e-mail cadastrado em Ajustes do painel */
+FB.getSettings().then(function (s) {
+  if (s.email) {
+    var a = document.createElement('a'); a.href = 'mailto:' + s.email; a.textContent = 'pelo e-mail ' + s.email;
+    var m = document.getElementById('mail'); m.textContent = ''; m.appendChild(a);
+  }
+}).catch(function () {});
+</script>
+</body>
+</html>
