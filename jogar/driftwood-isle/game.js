@@ -277,7 +277,7 @@ function aPlay(a,n){const ac=a.acts[n];if(!ac||a.cur===ac)return;ac.reset().fade
 
 /* ---------------- câmera e controles ---------------- */
 let camYaw=0,camDist=TOUCH?9:10;const keys={};
-addEventListener('keydown',e=>{if(e.repeat&&e.code!=='KeyE'&&e.code!=='Space')return;keys[e.code]=true;au();
+addEventListener('keydown',e=>{if(window.FSG&&FSG.open)return;if(e.repeat&&e.code!=='KeyE'&&e.code!=='Space')return;keys[e.code]=true;au();
   if(e.code==='KeyC'||e.code==='Tab'){e.preventDefault();panel?closePanel():openCraft();}
   if(e.code==='Escape')closePanel();
   if(/^Digit[1-9]$/.test(e.code)){const it=bagFood()[+e.code.slice(5)-1];if(it)useItem(it);}});
@@ -438,9 +438,13 @@ function openMenu(){panel='menu';$('panel').style.display='flex';
   $('pbox').innerHTML='<h2>☰ Menu <button class="x" data-x>✕</button></h2>'+
   '<div class="rec"><div class="ic">💾</div><div class="tx"><b>Salvar agora</b><br>O jogo também salva sozinho</div><button data-m="save">Salvar</button></div>'+
   '<div class="rec"><div class="ic">🎮</div><div class="tx"><b>Controles</b><br>'+(TOUCH?'Arraste no lado esquerdo para andar, arraste no lado direito para girar a câmera, botão laranja para agir.':'WASD andar · Shift correr · E/Espaço ação · C criar · Q/R ou arrastar o mouse para girar · roda do mouse para zoom · 1-9 comer')+'</div></div>'+
+  '<div class="rec"><div class="ic">📖</div><div class="tx"><b>Guia</b><br>Itens, receitas, natureza e perigos</div><button data-m="guide">Abrir</button></div>'+
+  '<div class="rec"><div class="ic">❓</div><div class="tx"><b>Como jogar</b><br>O básico em 6 cartões</div><button data-m="how">Ver</button></div>'+
   '<div class="rec"><div class="ic">🌱</div><div class="tx"><b>Novo jogo</b><br>Apaga o progresso e começa de novo</div><button data-m="reset" style="background:#f3a0a0">Recomeçar</button></div>';}
 let resetArm=false;
 function menuAct(m){if(m==='save'){save();toast('💾 Jogo salvo');closePanel();}
+  if(m==='guide'){closePanel();openGuide();return;}
+  if(m==='how'){closePanel();howTo();return;}
   if(m==='reset'){if(!resetArm){resetArm=true;toast('Toque de novo em Recomeçar para confirmar');setTimeout(()=>resetArm=false,3000);return;}localStorage.removeItem(SAVE_KEY);location.reload();}}
 
 /* ---------------- dia e noite ---------------- */
@@ -611,6 +615,61 @@ function die(){
   },1400);
 }
 
+
+/* ---------------- como jogar, guia e tutorial ---------------- */
+FSG.onClick=()=>tone(700,.05,'triangle',.05);
+function howTo(){
+  FSG.slides({title:'Como jogar · Driftwood Isle',accent:'#e8952c',slides:[
+    {e:'🏝️',t:'Sobreviva na ilha',x:'Seu barco afundou. Junte recursos, crie ferramentas e conserte o bote salva-vidas para escapar.'},
+    {e:TOUCH?'🕹️':'⌨️',t:'Andar e olhar',x:TOUCH?'Arraste no lado <b>esquerdo</b> da tela para andar e no lado <b>direito</b> para girar a câmera. O botão laranja faz a ação.':'<b>WASD</b> para andar, <b>Shift</b> para correr, <b>E</b> ou <b>Espaço</b> para a ação e arraste o mouse para girar a câmera.'},
+    {e:'❤️',t:'Vida, fome e sede',x:'A fome e a sede caem com o tempo. Coma bagas, cogumelos e carne assada, e beba água no <b>lago</b> (a água do mar é salgada!).'},
+    {e:'🛠️',t:'Crie coisas',x:'No botão 🛠️ você transforma galhos, pedras e fibras em machado, picareta, corda, tocha, fogueira e bancada.'},
+    {e:'🐺',t:'Cuidado à noite',x:'De noite aparecem lobos. Eles têm medo do fogo: fique perto de uma fogueira ou use uma tocha. A barraca deixa você dormir até de manhã.'},
+    {e:'🎯',t:'Siga o objetivo',x:'O quadro amarelo no alto mostra o próximo passo. A bússola aponta o caminho até o bote.'}]});
+}
+function openGuide(){
+  const cost=c=>Object.keys(c).map(k=>ITEMS[k].e+' '+c[k]+' '+ITEMS[k].n.toLowerCase()).join(', ');
+  const ff=f=>{const a=[];if(f.f)a.push(['Fome','+'+f.f]);if(f.s)a.push(['Sede','+'+f.s]);if(f.v)a.push(['Vida',(f.v>0?'+':'')+f.v]);return a;};
+  const SRC={galho:'Pegue do chão (ou ao cortar árvores)',pedra:'Pegue do chão ou quebre rochas com a picareta',madeira:'Corte árvores com o machado',fibra:'Arranque capim',
+    corda:'Crie com 3 fibras',tabua:'Crie na bancada com 2 madeiras',remo:'Crie na bancada',baga:'Colha nos arbustos com frutinhas',cogumelo:'Pegue no chão da floresta',
+    carne:'Cace veados e lobos',assada:'Asse carne crua na fogueira',bandagem:'Crie com fibra e corda',kit:'Escondido pela ilha (há 3)',tocha:'Crie com galho e fibra'};
+  const its=Object.keys(ITEMS).map(k=>{const I=ITEMS[k];return {e:I.e,n:I.n,sub:I.food?'Comida ou cura':'Material',d:(SRC[k]||'')+'.'+(k==='carne'?' Comer crua faz mal: melhor assar.':'')+(k==='tocha'?' Toque nela na mochila para acender: ilumina e afasta lobos.':''),st:I.food?ff(I.food):[]};});
+  const where={ferr:'Em qualquer lugar',const:'Constrói onde você está',banc:'Perto da bancada'};
+  const rec=RECIPES.map(r=>({e:r.e,n:r.n,sub:where[r.tab],d:r.d+'.',st:[['Precisa',cost(r.cost)]].concat(r.needTool?[['Também precisa','📦 fósforos (da mochila)']]:[])}));
+  rec.push({e:'🛶',n:'Bote salva-vidas',sub:'Na praia do norte',d:'Conserte o bote para escapar da ilha e terminar a versão 0.1.',st:[['Precisa',cost(RAFT_COST)]]});
+  const nat=[['tree','🌳','Árvore','Precisa de machado. Dá madeira e às vezes um galho. Volta a crescer.'],['rock','🪨','Rocha grande','Precisa de picareta. Dá 4 pedras.'],
+    ['stick','🪵','Galho no chão','Pegue com a mão.'],['stone','🪨','Pedra pequena','Pegue com a mão.'],['grass','🌾','Capim','Arranque para conseguir fibra.'],
+    ['bush','🫐','Arbusto de bagas','Dá 3 bagas. As frutinhas voltam depois de um tempo.'],['shroom','🍄','Cogumelo','Comida rápida.'],['kit','🧰','Kit de socorro','Há 3 escondidos. Recupera 50 de vida.']]
+    .map(([k,e,n,d])=>{const D=DEF[k];return {e,n,sub:D.regrow?'Volta em '+Math.round(D.regrow/60)+' min':'Não volta',d,st:Object.keys(D.give||{}).map(g=>['Dá',ITEMS[g].e+' '+D.give[g]+' '+ITEMS[g].n.toLowerCase()])};});
+  nat.push({e:'🏞️',n:'Lago',sub:'Água doce',d:'Beba aqui (+30 de sede). Se tiver o cantil, ele enche com 3 goles.'});
+  nat.push({e:'🦌',n:'Veado',sub:'Animal calmo',d:'Foge quando você chega perto. Caçar dá 3 carnes cruas.'});
+  const dang=[{e:'🍖',n:'Fome',sub:'Cai com o tempo',d:'Zera em cerca de 8 minutos. Sem comida você anda mais devagar e perde vida.'},
+    {e:'💧',n:'Sede',sub:'Cai mais rápido',d:'Zera em cerca de 6 minutos. Beba no lago ou use o cantil.'},
+    {e:'❤️',n:'Vida',sub:'Recupera sozinha',d:'Com fome e sede acima da metade, a vida volta devagar. Bandagens e kits curam na hora. Se a vida zerar, você desmaia e perde parte dos recursos.'},
+    {e:'🐺',n:'Lobos',sub:'Aparecem à noite',d:'A cada noite vêm mais lobos (até 5). Eles atacam, mas não chegam perto do fogo. Com o machado você luta melhor. Derrubar um lobo dá 2 carnes.'},
+    {e:'🌙',n:'Noite',sub:'Das 20h às 5h',d:'Fica escuro e perigoso. Acenda uma fogueira ou tocha. Dormir na barraca pula a noite (se não houver lobo por perto).'},
+    {e:'🌊',n:'Mar',sub:'Água salgada',d:'Não dá para beber água do mar. Procure o lago no meio da ilha.'}];
+  const ctl=TOUCH?[{e:'🕹️',n:'Andar',sub:'Lado esquerdo',d:'Arraste o dedo no lado esquerdo da tela. Arrastar até a borda faz correr.'},{e:'🔄',n:'Câmera',sub:'Lado direito',d:'Arraste no lado direito ou use os botões ⟲ ⟳.'},{e:'✋',n:'Ação',sub:'Botão laranja',d:'Pega, corta, quebra, bebe, ataca e usa construções. Segure para repetir.'},{e:'🛠️',n:'Criar',sub:'Botão 🛠️',d:'Abre as receitas.'},{e:'🎒',n:'Comer',sub:'Toque na mochila',d:'Toque numa comida da barra de baixo para comer.'}]
+   :[{e:'⌨️',n:'Andar',sub:'WASD',d:'Shift para correr.'},{e:'🖱️',n:'Câmera',sub:'Arrastar o mouse',d:'Ou Q/R. A roda do mouse dá zoom.'},{e:'✋',n:'Ação',sub:'E ou Espaço',d:'Pega, corta, quebra, bebe, ataca e usa construções. Segure para repetir.'},{e:'🛠️',n:'Criar',sub:'C ou Tab',d:'Abre as receitas.'},{e:'🎒',n:'Comer',sub:'Teclas 1 a 9',d:'Ou clique na comida na barra de baixo.'}];
+  FSG.guide({title:'📖 Guia · Driftwood Isle',accent:'#e8952c',tabs:[{name:'Receitas',items:rec},{name:'Itens',items:its},{name:'Natureza',items:nat},{name:'Perigos',items:dang},{name:'Controles',items:ctl}]});
+}
+function startTutorial(){
+  let p0=null;
+  const moved=()=>p0&&Math.hypot(player.position.x-p0.x,player.position.z-p0.z)>2.5;
+  const fin=()=>{S.flags.tut=true;save();if(!S.flags.bag)toast('🎒 Sua mochila está ali na areia. Chegue perto e aperte '+(TOUCH?'o botão laranja':'E'));};
+  const bagNode=nodes.find(n=>n.type==='bag');
+  const scr=(x,y,z)=>{const v=new V3(x,y,z).project(camera);return v.z<1?[(v.x+1)/2*innerWidth,(1-v.y)/2*innerHeight]:null;};
+  FSG.coach({accent:'#e8952c',done:fin,steps:[
+    {x:'Seu barco afundou e você foi parar nesta ilha. Vamos aprender o básico para sobreviver!'},
+    {enter:()=>{p0={x:player.position.x,z:player.position.z};},at:TOUCH?()=>[innerWidth*.22,innerHeight*.62]:null,r:50,
+      x:TOUCH?'Arraste o dedo no lado <b>esquerdo</b> da tela para andar.':'Use <b>W A S D</b> para andar (Shift corre).',done:moved},
+    TOUCH?{at:()=>[innerWidth*.72,innerHeight*.5],r:50,x:'Arraste no lado <b>direito</b> para girar a câmera.'}:{x:'Arraste o mouse para girar a câmera. A roda do mouse dá zoom.'},
+    {el:'#stats',x:'Fique de olho na ❤️ <b>vida</b>, 🍖 <b>fome</b> e 💧 <b>sede</b>. Coma bagas e beba água no lago.'},
+    {el:'#goal',x:'Aqui fica o seu <b>objetivo</b>. É só seguir passo a passo.'},
+    {at:()=>bagNode&&!bagNode.gone?scr(bagNode.x,H(bagNode.x,bagNode.z)+.6,bagNode.z):null,r:36,x:'Chegue perto da <b>mochila</b> do naufrágio e toque no botão de ação '+(TOUCH?'laranja':'(E)')+' para abrir.',done:()=>S.flags.bag},
+    {el:'#bCraft',x:'No 🛠️ você cria ferramentas e construções com o que coletar. O primeiro é o machado!'},
+    {el:'#bMenu',x:'No ☰ Menu tem o <b>Guia</b> com todos os itens, receitas e perigos. Cuidado com os lobos à noite!',btn:'Começar!'}]});
+}
 /* ---------------- início ---------------- */
 async function boot(){
   const names=Object.keys(MODELS);let n=0;
@@ -620,9 +679,11 @@ async function boot(){
   for(let i=0;i<4;i++){const s=freeSpot(1,9,20);if(s)spawnAnimal('deer',s.x,s.z);}
   wasNight=isNight();if(wasNight)spawnWolves();
   updateSky();frame();
-  $('lmsg').textContent=S.p?'Bem-vindo de volta!':'Pronto!';$('bGo').style.display='inline-block';
+  $('lmsg').textContent=S.p?'Bem-vindo de volta!':'Pronto!';$('bGo').style.display='inline-block';$('bHow').style.display='inline-block';
+  $('bHow').onclick=()=>{au();howTo();};
   $('bGo').onclick=()=>{au();$('start').style.display='none';started=true;clock.getDelta();if(TOUCH&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{});
-    if(!S.flags.bag)toast('🎒 Sua mochila está ali na areia. Chegue perto e aperte '+(TOUCH?'o botão laranja':'E'));};
+    if(!S.flags.tut)setTimeout(startTutorial,600);
+    else if(!S.flags.bag)toast('🎒 Sua mochila está ali na areia. Chegue perto e aperte '+(TOUCH?'o botão laranja':'E'));};
   $('bAgain').onclick=()=>{$('end').style.display='none';};
   window.__wg={P,dbg:()=>({busy:P.busy,dead:P.dead,panel,started}),S:()=>S,player:()=>player,nodes,animals,builds,give:(k,n)=>add(k,n),tool:k=>S.tools[k]=true,setTime:t=>S.time=t,tp:(x,z)=>{player.position.set(x,H(x,z),z);},
     act:doAction,target:()=>target,craft:id=>craft(RECIPES.find(r=>r.id===id)),RAFT_POS,SPAWN,H,camYaw:v=>camYaw=v,start:()=>$('bGo').onclick()};

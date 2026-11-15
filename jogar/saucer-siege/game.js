@@ -329,6 +329,11 @@ function makeThumbs(){
     cam.position.set(2.6,h*.62+1.7,3.6);cam.lookAt(0,h*.5,0);cam.fov=15+h*7;cam.updateProjectionMatrix();
     r2.clear();r2.render(sc,cam);THUMB[type+l]=r2.domElement.toDataURL();sc.remove(tm.g);
   }});
+  // óvnis para o guia
+  Object.keys(ENEMIES).forEach(k=>{const E=ENEMIES[k];const o=M(E.model);const g=new THREE.Group();g.add(o);
+    const b=new THREE.Box3().setFromObject(o),sz=new THREE.Vector3();b.getSize(sz);const c=b.getCenter(new THREE.Vector3());o.position.sub(c);const s=1.5/Math.max(sz.x,sz.y,sz.z);g.scale.setScalar(s*(k==='m'?.7:1));
+    if(E.shield){const bb=new THREE.Mesh(bubbleGeo,bubbleMat);bb.scale.setScalar(1.25/s);g.add(bb);}
+    sc.add(g);cam.position.set(1.6,1.7,2.6);cam.lookAt(0,0,0);cam.fov=40;cam.updateProjectionMatrix();r2.clear();r2.render(sc,cam);THUMB['e_'+k]=r2.domElement.toDataURL();sc.remove(g);});
   r2.dispose();try{r2.forceContextLoss();}catch(e){}
 }
 
@@ -563,6 +568,7 @@ function startLevel(li,bg){
   if(bg)return;
   showScreen(null);$('hud').style.display='';hudDirty=true;
   banner(L.name,1600);playMusic(levelMusic());
+  if(li===0&&!save.tut)setTimeout(startTutorial,1700);
 }
 function endLevel(win){
   if(G.over)return;G.over=true;closePanel();
@@ -611,10 +617,12 @@ function renderMenu(){
   });
   const infLock=!save.stars[2];
   h+='<div class="world side"><button class="lvl inf'+(infLock?' locked':'')+'" data-l="inf"><span class="n">MODO INFINITO</span><b>♾ Arena Infinita</b><span class="nb">'+(infLock?'🔒 Complete a fase 3':'Recorde: '+fmt(save.best)+' · onda '+save.bestWave)+'</span></button>'+
-     '<button class="btn orange" id="rankBtn">🏆 Ranking</button><div id="acct"></div></div>';
+     '<button class="btn orange" id="rankBtn">🏆 Ranking</button><div class="mrow"><button class="btn ghost" id="howBtn">Como jogar</button><button class="btn ghost" id="guideBtn">📖 Guia</button></div><div id="acct"></div></div>';
   el.innerHTML=h;
   el.querySelectorAll('[data-l]').forEach(b=>{b.onclick=()=>{ac();if(b.classList.contains('locked')){sfx('no');toast(b.dataset.l==='inf'?'Complete a fase 3 para liberar':'Complete a fase anterior');return;}sfx('click');startLevel(b.dataset.l==='inf'?'inf':+b.dataset.l);};});
   $('rankBtn').onclick=()=>{ac();sfx('click');openRank();};
+  $('howBtn').onclick=()=>{ac();sfx('click');howTo();};
+  $('guideBtn').onclick=()=>{ac();sfx('click');openGuide();};
   renderAcct();fitMenu();
 }
 function renderAcct(){
@@ -835,6 +843,61 @@ const unlock=()=>{ac();if(wantMus)playMusic(wantMus,true);removeEventListener('p
 addEventListener('pointerdown',unlock,true);addEventListener('keydown',unlock,true);
 
 // ponte com o salvamento na nuvem (cloud.js, só na versão do site)
+
+// ---------- como jogar, guia e tutorial ----------
+const ENAME={a:['Óvni comum','O básico: vida e velocidade médias.'],b:['Óvni veloz','Muito rápido e frágil. A Balista e o Cristal seguram bem.'],
+  c:['Óvni blindado','Lento, com muita vida e armadura: tiros fracos causam menos dano. Use Canhão, Catapulta e Raio.'],
+  d:['Óvni divisor','Quando cai, se divide em 2 mini óvnis.'],m:['Mini óvni','Nasce do Óvni divisor. Pequeno e rápido.'],
+  s:['Óvni com escudo','Tem uma bolha de escudo. Só o Cristal quebra a bolha (ou um Meteoro). Enquanto ela existe, as outras torres não causam dano.'],
+  X:['Nave-mãe','O chefe! Enorme, blindado e muito resistente. Se chegar à base, tira 10 vidas.']};
+const TIPS={ballista:'Boa para começar: barata, rápida e acerta longe.',cannon:'Ótimo em curvas, onde os óvnis passam juntinhos.',
+  crystal:'Coloque perto do começo da estrada para deixar todo mundo lento. Indispensável contra óvnis com escudo.',
+  catapult:'Acerta muito longe e em área. Libera depois da fase 1.',tesla:'O raio pula de óvni em óvni. Libera depois da fase 3.'};
+function howTo(done){
+  FSG.slides({title:'Como jogar · Saucer Siege',accent:'#2fbf71',done,slides:[
+    {img:THUMB.e_a,t:'Defenda a base',x:'Os óvnis seguem a estrada até a sua base. Cada um que chega tira vidas. Com 0 vidas, você perde a fase.'},
+    {img:THUMB.ballista1,t:'Construa torres',x:'Toque na grama para escolher uma torre. Cada uma custa 🪙 moedas, e derrubar óvnis dá mais moedas.'},
+    {img:THUMB.cannon3,t:'Melhore e venda',x:'Toque numa torre para melhorar (até o nível 3) ou vender (devolve 70%).'},
+    {e:'▶',t:'Chame as ondas',x:'Toque em <b>▶ Onda</b> para os óvnis virem. Chamar antes do tempo dá moedas de bônus. O botão 1× acelera o jogo.'},
+    {e:'☄️',t:'Habilidades',x:'<b>Meteoro</b>: toque no botão e depois no mapa para causar dano em área. <b>Congelar</b>: para todos os óvnis por 4 segundos. As duas recarregam sozinhas.'},
+    {img:THUMB.e_s,t:'Estrelas e recordes',x:'Termine com 18 vidas ou mais para ganhar 3 estrelas. Complete a fase 3 para liberar o Modo Infinito e o ranking.'}]});
+}
+function openGuide(){
+  const lv=(T,f,suf)=>T.lv.map(l=>l[f]==null?'–':(Math.round(l[f]*100)/100)+(suf||'')).join(' → ');
+  const tw=TORDER.map(k=>{const T=TOWERS[k],st=[['Custo','🪙 '+T.cost],['Melhorias','🪙 '+T.up.join(' → 🪙 ')],['Dano',lv(T,'dmg')],['Alcance',lv(T,'rng')],['Recarga',lv(T,'rate','s')]];
+    if(T.lv[0].spl)st.push(['Área',lv(T,'spl')]);if(T.lv[0].slow)st.push(['Lentidão',T.lv.map(l=>Math.round(l.slow*100)+'%').join(' → ')]);if(T.lv[0].chain)st.push(['Óvnis por raio',lv(T,'chain')]);
+    return {img:THUMB[k+'3'],n:T.name,sub:T.unlock?'Libera depois da fase '+T.unlock:'Disponível desde o começo',d:T.desc+'. '+TIPS[k]+(k==='crystal'?' Também causa 5x mais dano em escudos.':''),st};});
+  const en=Object.keys(ENEMIES).map(k=>{const E=ENEMIES[k];const st=[['Vida',E.hp+''],['Velocidade',E.spd>=2?'Muito rápida':E.spd>=1.2?'Rápida':E.spd>=1?'Média':'Lenta'],['Armadura',E.armor?E.armor+'':'Nenhuma'],['Moedas',E.gold+''],['Vidas que tira',(E.lives||1)+'']];
+    if(E.shield)st.push(['Escudo',E.shield+'']);if(E.split)st.push(['Ao cair','Vira 2 mini óvnis']);
+    return {img:THUMB['e_'+k],n:ENAME[k][0],sub:E.boss?'Chefe':'Inimigo',d:ENAME[k][1]+' A vida aumenta a cada fase e a cada onda.',st};});
+  const ab=[{e:'☄️',n:'Meteoro',sub:'Recarga: '+METEOR_CD+'s',d:'Toque no botão ☄️ e depois no mapa. Causa muito dano em área e quebra escudos. No PC: tecla Q.',st:[['Recarga',METEOR_CD+' segundos']]},
+    {e:'❄️',n:'Congelar',sub:'Recarga: '+FREEZE_CD+'s',d:'Congela todos os óvnis da tela por '+FREEZE_T+' segundos. A Nave-mãe fica congelada pela metade do tempo. No PC: tecla E.',st:[['Duração',FREEZE_T+' segundos'],['Recarga',FREEZE_CD+' segundos']]}];
+  const tips=[{e:'⭐',n:'Estrelas',sub:'Por vidas restantes',d:'Ao vencer: 18 vidas ou mais dão 3 estrelas, 10 ou mais dão 2 estrelas e menos que isso dá 1. Cada fase libera a próxima.'},
+    {e:'🪙',n:'Chamar cedo',sub:'Bônus de moedas',d:'Entre as ondas aparece uma contagem. Chamar a próxima onda antes do fim dá moedas extras.'},
+    {e:'♾',n:'Modo Infinito',sub:'Libera depois da fase 3',d:'As ondas não acabam e ficam cada vez mais fortes. Sua pontuação vai para o ranking online (na versão do site).'},
+    {e:'🌀',n:'Dois portais',sub:'Mundo 2',d:'Nas fases de neve os óvnis vêm por duas estradas. Defenda os dois lados e o encontro das estradas.'},
+    {e:'⏩',n:'Velocidade',sub:'Botão 1× / 2×',d:'Acelera o jogo quando tudo estiver sob controle. No PC: tecla F.'}];
+  FSG.guide({title:'📖 Guia · Saucer Siege',accent:'#2fbf71',tabs:[{name:'Torres',items:tw},{name:'Óvnis',items:en},{name:'Habilidades',items:ab},{name:'Dicas',items:tips}]});
+}
+function startTutorial(){
+  const v=new THREE.Vector3();
+  const scr=(x,y,z)=>{v.set(x,y,z).project(C);return v.z<1?[(v.x+1)/2*innerWidth,(1-v.y)/2*innerHeight]:null;};
+  let cell=null;
+  const findCell=()=>{let best=null,bd=1e9;for(let z=0;z<GH;z++)for(let x=0;x<GW;x++){if(G.grid[z][x]!==0)continue;
+    const nearPath=[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>G.grid[z+b]&&G.grid[z+b][x+a]===1);if(!nearPath)continue;
+    const d=Math.abs(x-4.5)+Math.abs(z-4)*1.2;if(d<bd){bd=d;best=[x,z];}}return best;};
+  FSG.coach({accent:'#2fbf71',done:()=>{save.tut=1;persist();},steps:[
+    {x:'Os óvnis vão seguir a <b>estrada</b> até a sua base. Construa torres na grama para derrubá-los antes!'},
+    {enter:()=>{cell=findCell();},at:()=>cell&&scr(wx(cell[0]),.2,wz(cell[1])),r:30,x:'Toque neste pedaço de <b>grama</b> para construir.',done:()=>panelMode==='build'},
+    {el:()=>document.querySelector('#panel .card'),x:'Escolha a <b>Balista</b>: barata e acerta longe.',done:()=>G.towers.length>0},
+    {el:'#stats .pill',x:'Torres custam 🪙 moedas. Cada óvni derrubado dá mais moedas para construir.'},
+    {el:'#wavebtn',x:'Pronto! Toque em <b>▶ Começar onda 1</b> para os óvnis virem.',done:()=>G.wave>0},
+    {el:'#abil',x:'<b>Meteoro</b> e <b>Congelar</b> ajudam nos apertos. Eles recarregam sozinhos.'},
+    {el:'#pau',x:'Toque numa torre para melhorar ou vender. No pause (❚❚) tem o <b>Guia</b> com todas as torres e óvnis. Boa sorte!',btn:'Começar!'}]});
+}
+$('pGuide').onclick=()=>{ac();sfx('click');openGuide();};
+$('pHow').onclick=()=>{ac();sfx('click');howTo();};
+FSG.onClick=()=>sfx('click');
 window.SS={get save(){return save},merge:mergeSave,refresh:()=>{if(screenState==='menu')renderAcct();}};
 // ganchos para testes
 window.__td={towerModel,rebuild:rebuildTower,zoomCam,R,sun,get G(){return G},startLevel,startWave,placeTower,openBuild,openTower,update,TOWERS,LEVELS,ENDLESS,genWave,useFreeze,dropMeteor,setSpeed:v=>speed=v,get screen(){return screenState},get save(){return save},showScreen,openRank};

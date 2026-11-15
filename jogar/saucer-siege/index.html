@@ -72,6 +72,7 @@ canvas{display:block;touch-action:none}
 .lvl .nb{font-size:12px;opacity:.85;font-weight:700}
 .lvl.inf{width:100%;background:linear-gradient(135deg,#6b4dff,#ff6a9a);border-color:rgba(255,255,255,.3)}
 .lvl.locked{opacity:.45;cursor:default}
+.mrow{display:flex;gap:8px}.mrow .btn{flex:1;padding:8px 6px;font-size:13px}
 .acct{display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700;background:rgba(0,0,0,.2);border-radius:14px;padding:8px}
 .acct .btn{padding:7px 10px;font-size:13px}
 .menuopts{display:flex;gap:8px;justify-content:center;margin:10px 0 0}
@@ -133,7 +134,7 @@ canvas{display:block;touch-action:none}
   <div class="mcorner"><button class="btn round musR" title="Música">🎵</button><button class="btn round sndR" title="Efeitos">🔊</button></div>
   <div id="mbox">
   <div class="logo">Saucer <em>Siege</em></div>
-  <div class="sub">Fabula Studio · v0.2.1</div>
+  <div class="sub">Fabula Studio · v0.2.2</div>
   <div id="levels"></div>
   <div class="help">Toque na grama para construir torres e numa torre para melhorar ou vender. ☄️ Meteoro e ❄️ Congelar ficam no canto da tela. Óvnis com escudo só caem depois que o Cristal quebra a bolha.</div>
   </div>
@@ -145,6 +146,7 @@ canvas{display:block;touch-action:none}
     <button class="btn orange" id="restart">↻ Reiniciar</button>
     <button class="btn red" id="quit">☰ Fases</button>
   </div>
+  <div class="row" style="margin-top:10px"><button class="btn ghost" id="pGuide">📖 Guia</button><button class="btn ghost" id="pHow">Como jogar</button></div>
   <div class="menuopts" style="margin-top:16px"><button class="btn ghost musT">🎵 Música: sim</button><button class="btn ghost sndT">🔊 Efeitos: sim</button></div>
 </div>
 <div class="screen" id="end">
@@ -169,6 +171,7 @@ canvas{display:block;touch-action:none}
 <script src="GLTFLoader.js"></script>
 <script src="models.js"></script>
 <script src="audio.js"></script>
+<script src="fs-guide.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../../config.js"></script>
 <script src="cloud.js"></script>

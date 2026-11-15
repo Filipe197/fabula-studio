@@ -1329,6 +1329,8 @@ function renderPanel(){
     h+='<div class="row"><div class="ic">🏆</div><div class="tx"><b>Conquistas</b><br>'+(achN?achN+' recompensa'+(achN>1?'s':'')+' para pegar':'Objetivos de longo prazo')+'</div><button class="bt alt" data-act="open" data-id="ach">Abrir</button></div>';
     h+='<div class="row"><div class="ic">🎨</div><div class="tx"><b>Decorar</b><br>Compre enfeites e posicione onde quiser</div><button class="bt alt" data-act="open" data-id="decor">Loja</button><button class="bt" data-act="edit">'+(editMode?'Parar':'✋ Mover')+'</button></div>';
     h+='<div class="row"><div class="ic">🗺️</div><div class="tx"><b>Terrenos</b><br>Expanda a fazenda</div><button class="bt alt" data-act="open" data-id="zones">Ver</button></div>';
+    h+='<div class="row"><div class="ic">📖</div><div class="tx"><b>Guia da fazenda</b><br>Plantas, animais, fábricas, receitas e ferramentas</div><button class="bt alt" data-act="guide">Abrir</button></div>';
+    h+='<div class="row"><div class="ic">❓</div><div class="tx"><b>Como jogar</b><br>O básico em 6 cartões</div><button class="bt alt" data-act="howto">Ver</button></div>';
     h+='<div class="row"><div class="ic">🎵</div><div class="tx"><b>Volume da música</b><input class="vol" type="range" min="0" max="100" value="'+Math.round(vmus()*100)+'" data-vol="vm"></div><span class="vv">'+Math.round(vmus()*100)+'%</span></div>';
     h+='<div class="row"><div class="ic">🔊</div><div class="tx"><b>Volume dos efeitos</b><input class="vol" type="range" min="0" max="100" value="'+Math.round(vsfx()*100)+'" data-vol="vs"></div><span class="vv">'+Math.round(vsfx()*100)+'%</span></div>';
     h+='<div class="row"><div class="ic">⚙️</div><div class="tx"><b>Qualidade gráfica: '+(LOWQ?'Baixa':'Alta')+'</b><br>Baixa = sem sombras, mais leve e gasta menos bateria. O jogo recarrega.</div><button class="bt" data-act="quality">'+(LOWQ?'Usar alta':'Usar baixa')+'</button></div>';
@@ -1465,6 +1467,8 @@ $('body').addEventListener('click',e=>{
   else if(act==='open'){openPanel(id);}
   else if(act==='edit'){editMode=!editMode;closePanel();toast(editMode?'✋ Toque numa decoração para mudar de lugar ou vender. Menu → Parar para sair.':'Edição encerrada');showPlaceBar();}
   else if(act==='quality'){S.q=LOWQ?'high':'low';save();location.reload();}
+  else if(act==='guide'){closePanel();openGuide();}
+  else if(act==='howto'){closePanel();howTo();}
   else if(act==='spin'){spinWheel();}
   else if(act==='ach'){claimAch(id);}
   else if(act==='decor'){buyDecor(id);}
@@ -2398,6 +2402,53 @@ function frame(now){
 }
 
 /* ---------------- INÍCIO ---------------- */
+/* ---------------- COMO JOGAR E GUIA ---------------- */
+FSG.onClick=()=>{try{SND.click();}catch(e){}};
+function howTo(){
+  FSG.slides({title:'Como jogar · Harvest Hollow',accent:'#4caf50',slides:[
+    {e:'🌾',t:'Sua fazenda',x:'Plante, cuide dos animais e produza coisas gostosas. Venda tudo para crescer a fazenda e subir de nível.'},
+    {e:'🥕',t:'Plantar, regar e colher',x:'Toque num canteiro vazio e escolha a semente. Toque nele de novo para <b>regar</b> 💧 e, quando estiver pronto, para <b>colher</b> 🧺.'},
+    {e:'🐔',t:'Animais',x:'Compre na 🛒 Loja. Eles comem 🌾 trigo, 🥫 ração ou 🥕 cenoura e dão ovos, leite, lã e trufas. Toque no animal para alimentar e coletar.'},
+    {e:'🚚',t:'Venda',x:'O caminhão traz pedidos que pagam mais. Visitantes, o mercado da cidade e o trem também compram. O celeiro guarda os produtos e o silo guarda as colheitas.'},
+    {e:'🌀',t:'Fábricas',x:'Moinho, laticínio, forno e outras fábricas transformam o que você produz em itens que valem muito mais.'},
+    {e:'⭐',t:'Suba de nível',x:'Cada coisa feita dá ⭐ experiência. Novos níveis liberam plantas, animais, árvores, fábricas e terrenos. Veja tudo no ☰ Menu → Guia.'}]});
+}
+function openGuide(){
+  const L=lv=>'Nível '+lv+(level()<lv?' 🔒':'');
+  const nm=id=>{const I=ITEM(id);return I?I.e+' '+I.name:id;};
+  const inp=o=>Object.keys(o).map(k=>o[k]+' '+ITEM(k).e).join(' + ');
+  const crops=Object.keys(CROPS).map(k=>{const C=CROPS[k];return {e:C.e,n:C.name,sub:L(C.lvl),lock:level()<C.lvl,
+    d:'Plante num canteiro, regue e colha.'+(k==='wheat'?' Também é a comida da galinha, da vaca, do porco e da alpaca.':k==='carrot'?' É a comida do coelho angorá.':''),
+    st:[['Semente','💰 '+C.cost],['Tempo para crescer',fmtT(C.time)],['Venda','💰 '+C.sell],['Experiência','⭐ '+C.xp]]};});
+  const anim=Object.keys(ANIMALS).map(k=>{const A=ANIMALS[k];return {e:A.e,n:A.name,sub:L(A.lvl)+' · celeiro '+A.barn,lock:level()<A.lvl,
+    d:'Alimente para ele produzir. Quando o produto estiver pronto, toque no animal para coletar.',
+    st:[['Preço','💰 '+A.cost],['Come',A.feed+' '+ITEM(A.food).e+' '+ITEM(A.food).name.toLowerCase()],['Produz',(A.n||1)+' '+nm(A.prod)],['Tempo',fmtT(A.time)],['Venda do produto','💰 '+ITEM(A.prod).sell]]};});
+  const trees=Object.keys(TREES).map(k=>{const T=TREES[k];return {e:ITEM(T.fruit).e,n:T.name,sub:L(T.lvl),lock:level()<T.lvl,
+    d:'Árvores dão frutas para sempre. Plante nos espaços na frente dos canteiros.'+(T.rare?' Às vezes dá a fruta rara '+nm(T.rare)+' (15%).':''),
+    st:[['Preço','💰 '+T.cost],['Fruta',T.n+' '+nm(T.fruit)],['Tempo',fmtT(T.time)],['Venda','💰 '+ITEM(T.fruit).sell+' cada']]};});
+  const facs=Object.keys(FACTORIES).map(k=>{const F=FACTORIES[k];return {e:F.e,n:F.name,sub:L(F.lvl),lock:level()<F.lvl,
+    d:'Coloque até '+F.slots+' receitas na fila. Elas ficam prontas mesmo com o jogo fechado. Melhorar a fábrica dá mais vagas e deixa mais rápida.',
+    st:[['Construir','💰 '+F.cost]].concat(F.recipes.map(r=>{const R=RECIPES[r];return [(R.n>1?R.n+' ':'')+nm(r),inp(R.in)+' · '+fmtT(R.time)];}))};});
+  const src={};
+  for(const k in CROPS)src[k]='Colheita: plante no canteiro';
+  for(const k in ANIMALS){const A=ANIMALS[k];src[A.prod]=(src[A.prod]?src[A.prod]+' e ':'Animal: ')+A.name.toLowerCase();}
+  for(const k in TREES){src[TREES[k].fruit]='Árvore: '+TREES[k].name.toLowerCase();if(TREES[k].rare)src[TREES[k].rare]='Rara na '+TREES[k].name.toLowerCase()+' (15%)';}
+  for(const f in FACTORIES)FACTORIES[f].recipes.forEach(r=>{src[r]=FACTORIES[f].name+': '+inp(RECIPES[r].in);});
+  Object.assign(src,{fish:'Pesca no lago',carp:'Pesca no lago',rarefish:'Pesca (raro)',shark:'Pesca: lendário (1%, 3% com a vara pro)',wood:'Machado no mato das bordas',stone:'Picareta nas pedras das bordas'});
+  const prods=Object.keys(PRODUCTS).map(k=>{const P=PRODUCTS[k];return {e:P.e,n:P.name,sub:'Vende por 💰 '+P.sell,d:src[k]||'',st:[['Venda','💰 '+P.sell],['Experiência','⭐ '+P.xp]]};});
+  const tools=Object.keys(TOOLS).map(k=>{const T=TOOLS[k];return {e:T.e,n:T.name,sub:L(T.lvl),lock:level()<T.lvl,d:T.desc+'.',st:[['Preço','💰 '+T.cost]]};})
+    .concat(CANS.slice(1).map((C,i)=>({e:'🚿',n:C.name,sub:C.lvl?L(C.lvl):'Começa com ele',d:C.desc+'.',st:C.cost?[['Preço','💰 '+C.cost]]:[]})))
+    .concat(Object.keys(HELPERS).map(k=>{const H=HELPERS[k];return {e:H.e,n:H.name,sub:'Ajudante · '+L(H.lvl),lock:level()<H.lvl,d:H.desc+'.',st:[['Preço','💰 '+H.cost]]};}));
+  const fish=[{e:'🎣',n:'Como pescar',sub:L(FISH.lvl),d:'Toque no lago e espere o peixe morder. Quando aparecer o aviso, toque em <b>Puxar</b> rápido! As iscas 🪱 recarregam com o tempo.'}]
+    .concat(ALBUM.map(a=>({e:a.e,n:a.name,sub:a.id==='shark'?'Lendário':a.id==='bone'?'Lixo':a.id==='rarefish'?'Raro':'Comum',d:a.id==='bone'?'Não vale nada, mas conta para o álbum.':'Vende por 💰 '+(ITEM(a.id)?ITEM(a.id).sell:0)+'. Complete o álbum de peixes para ganhar 💰'+ALBUM_REWARD+'.'})));
+  const tips=[{e:'🚚',n:'Pedidos do caminhão',sub:'Pagam 1,5x',d:'Entregue os itens pedidos para ganhar mais que vendendo no celeiro. Pedidos ruins podem ser trocados no ✕.'},
+    {e:'🙋',n:'Visitantes',sub:'Pagam 1,8x',d:'Aparecem a partir do nível 3 pedindo um item.'},
+    {e:'📅',n:'Missões diárias',sub:'Baú de prêmio',d:'Todo dia 3 missões novas. Complete as três para abrir o baú 🎁.'},
+    {e:'🌧️',n:'Chuva e arco-íris',sub:'Clima',d:'A chuva rega os canteiros sozinha. Depois vem o arco-íris: cada colheita rende +1 por 1 minuto.'},
+    {e:'🏆',n:'Conquistas',sub:'Longo prazo',d:'Objetivos com 4 níveis cada, que dão moedas e experiência.'},
+    {e:'📦',n:'Celeiro e silo',sub:'Espaço',d:'O silo guarda as colheitas e o celeiro guarda o resto. Melhore os dois na Loja quando encher.'}];
+  FSG.guide({title:'📖 Guia · Harvest Hollow',accent:'#4caf50',tabs:[{name:'Plantações',items:crops},{name:'Animais',items:anim},{name:'Árvores',items:trees},{name:'Fábricas',items:facs},{name:'Produtos',items:prods},{name:'Ferramentas',items:tools},{name:'Pesca',items:fish},{name:'Dicas',items:tips}]});
+}
 async function boot(){
   S=load();
   const names=Object.keys(MODELS).filter(n=>!n.startsWith('pet_')&&n!=='farmer');
@@ -2415,6 +2466,7 @@ async function boot(){
   for(let i=0;i<TREE_SLOTS.length;i++)if(S.trees[i]&&treeState(i)==='ready')ready++;
   refreshAll();updDay();
   $('load').style.display='none';
+  if(S.tg===0&&!S.howSeen){S.howSeen=1;save();setTimeout(()=>howTo(),500);}
   if(S.tg>=TUT.length)checkDaily();
   if(ready&&S.tg>=TUT.length)toast('Bem-vindo de volta! '+ready+' coisa'+(ready>1?'s':'')+' pronta'+(ready>1?'s':'')+' para coletar 🌟');
   if(DEV>1)toast('Modo teste: tempos '+DEV+'x mais rápidos');
