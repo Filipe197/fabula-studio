@@ -456,7 +456,7 @@ footer{border-top:1px solid rgba(255,255,255,.06);overflow:hidden}
         '<span class="t"><b>' + esc(g.titulo) + '</b><span>' + esc(g.genero) + '</span></span>' +
         '<span class="badge m-' + g.modelo + '" style="align-self:center">' + MODEL[g.modelo] + '</span></button>';
     }).join('');
-    var g = games[tab], img = cover(g);
+    var g = games[tab], img = g.capa_vitrine || cover(g);
     var st = $('stage');
     st.style.background = tint(g.cor); st.style.border = '1px solid ' + hexA(g.cor, .35); st.style.color = g.cor;
     st.innerHTML = '<div class="stage-img">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(g.titulo) + '">' : artHtml(g)) + '<span class="st">' + esc(g.status_texto) + '</span></div>' +

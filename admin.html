@@ -376,7 +376,7 @@ th{color:var(--tx3);font-size:12px;letter-spacing:.08em;text-transform:uppercase
     curType = 'jogos';
     cur = g ? JSON.parse(JSON.stringify(g)) : {
       titulo: '', genero: '', modelo: 'gratis', preco: '', status: 'producao', status_texto: 'Em desenvolvimento', cor: COLORS[jogos.length % COLORS.length],
-      resumo: '', descricao: '', destaques: [], plataformas: [], capa: '', icone: '', galeria: [],
+      resumo: '', descricao: '', destaques: [], plataformas: [], capa: '', capa_vitrine: '', icone: '', galeria: [],
       link_jogar: '', link_download: '', link_steam: '', link_itch: '', em_destaque: false, visivel: true, ordem: jogos.length + 1
     };
     var c = cur;
@@ -404,7 +404,8 @@ th{color:var(--tx3);font-size:12px;letter-spacing:.08em;text-transform:uppercase
       '</div></fieldset>' +
       '<fieldset><legend>Visual</legend>' +
       '<div class="f"><span>Cor do jogo (usada na vitrine)</span><div class="colors" id="colors">' + COLORS.map(function (x) { return '<button type="button" data-c="' + x + '" style="background:' + x + '" class="' + (c.cor === x ? 'on' : '') + '" aria-label="Cor ' + x + '"></button>'; }).join('') + '<input type="color" id="colorIn" value="' + esc(c.cor) + '" aria-label="Outra cor"></div></div>' +
-      '<div class="g2"><div class="f"><span>Capa</span><div class="up"><img class="pv" id="pvCapa" alt="" src="' + esc(c.capa) + '"' + (c.capa ? '' : ' style="visibility:hidden"') + '><span class="btn b-ghost filebtn">' + I.img + 'Escolher<input type="file" accept="image/*" id="fCapa"></span>' + '<button type="button" class="btn b-icon" id="rmCapa" aria-label="Remover capa">' + I.del + '</button></div></div>' +
+      '<div class="g2"><div class="f"><span>Capa (horizontal)</span><div class="up"><img class="pv" id="pvCapa" alt="" src="' + esc(c.capa) + '"' + (c.capa ? '' : ' style="visibility:hidden"') + '><span class="btn b-ghost filebtn">' + I.img + 'Escolher<input type="file" accept="image/*" id="fCapa"></span>' + '<button type="button" class="btn b-icon" id="rmCapa" aria-label="Remover capa">' + I.del + '</button></div></div>' +
+      '<div class="f"><span>Arte da vitrine (vertical)</span><div class="up"><img class="pv" id="pvVit" alt="" style="width:76px;height:90px;' + (c.capa_vitrine ? '' : 'visibility:hidden') + '" src="' + esc(c.capa_vitrine) + '"><span class="btn b-ghost filebtn">' + I.img + 'Escolher<input type="file" accept="image/*" id="fVit"></span><button type="button" class="btn b-icon" id="rmVit" aria-label="Remover arte da vitrine">' + I.del + '</button></div><small>Usada no destaque "Nossos mundos". Ideal: 1000×1200. Sem ela, usa a capa.</small></div>' +
       '<div class="f"><span>Ícone</span><div class="up"><img class="pv sq" id="pvIcone" alt="" src="' + esc(c.icone) + '"' + (c.icone ? '' : ' style="visibility:hidden"') + '><span class="btn b-ghost filebtn">' + I.img + 'Escolher<input type="file" accept="image/*" id="fIcone"></span><button type="button" class="btn b-icon" id="rmIcone" aria-label="Remover ícone">' + I.del + '</button></div></div></div>' +
       '<div class="f"><span>Galeria de imagens</span><small>A primeira e a última aparecem no topo do site quando o jogo está em destaque. Da 3ª à 5ª viram os cartões grandes.</small><div class="gal" id="gal"></div><span class="btn b-ghost filebtn" style="align-self:flex-start">' + I.plus + 'Adicionar imagens<input type="file" accept="image/*" multiple id="fGal"></span></div>' +
       '</fieldset>' +
@@ -433,6 +434,8 @@ th{color:var(--tx3);font-size:12px;letter-spacing:.08em;text-transform:uppercase
     $('colorIn').oninput = function () { cur.cor = this.value; [].forEach.call($('colors').querySelectorAll('[data-c]'), function (x) { x.classList.remove('on'); }); preview(); };
     $('fCapa').onchange = function () { pickUpload(this, function (u) { cur.capa = u; $('pvCapa').src = u; $('pvCapa').style.visibility = ''; preview(); }); };
     $('fIcone').onchange = function () { pickUpload(this, function (u) { cur.icone = u; $('pvIcone').src = u; $('pvIcone').style.visibility = ''; }); };
+    $('fVit').onchange = function () { pickUpload(this, function (u) { cur.capa_vitrine = u; $('pvVit').src = u; $('pvVit').style.visibility = ''; }); };
+    $('rmVit').onclick = function () { cur.capa_vitrine = ''; $('pvVit').style.visibility = 'hidden'; };
     $('rmCapa').onclick = function () { cur.capa = ''; $('pvCapa').style.visibility = 'hidden'; preview(); };
     $('rmIcone').onclick = function () { cur.icone = ''; $('pvIcone').style.visibility = 'hidden'; };
     $('fGal').onchange = function () { pickUpload(this, function (u) { cur.galeria.push({ url: u, legenda: '' }); renderGal(); preview(); }); };
