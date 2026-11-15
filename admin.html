@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel · Fabula Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#090C18;--bg2:#0E1326;--card:#121831;--card2:#171E3B;--line:rgba(255,255,255,.09);--tx:#E9ECF7;--tx2:#B7BED8;--tx3:#8B93B5;--acc:#FFC566;--green:#7EE0B5;--red:#FF8A7A;--disp:'Bricolage Grotesque',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system-ui,sans-serif;font-size:15px}
+a{color:var(--acc);text-decoration:none}
+button,input,select,textarea{font-family:inherit;font-size:15px}
+img{display:block}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:12px;border:1px solid transparent;font-weight:700;cursor:pointer;transition:filter .2s,transform .15s;white-space:nowrap}
+.btn:hover{filter:brightness(1.1)}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.5;cursor:default}
+.b-acc{background:var(--acc);color:#1A1206}
+.b-ghost{background:rgba(255,255,255,.05);border-color:var(--line);color:var(--tx)}
+.b-red{background:rgba(255,138,122,.12);border-color:rgba(255,138,122,.4);color:#FFB4A8}
+.b-icon{width:40px;min-height:40px;padding:0;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--tx2)}
+.ico{width:18px;height:18px;flex:none}
+.disp{font-family:var(--disp);letter-spacing:-.02em}
+
+/* login */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1px);background-size:28px 28px}
+.lbox{width:100%;max-width:400px;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:36px;display:flex;flex-direction:column;gap:18px;box-shadow:0 40px 100px rgba(0,0,0,.5)}
+.lbox h1{margin:0;font-family:var(--disp);font-size:28px;color:#fff}
+.err{color:#FFB4A8;font-size:14px;min-height:18px}
+
+/* layout */
+#app{display:none;min-height:100vh}
+.side{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--bg2);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:6px;z-index:10}
+.brand{display:flex;align-items:center;gap:10px;padding:6px 10px 22px;color:#fff}
+.brand b{font-family:var(--disp);font-weight:800;font-size:20px;display:block;line-height:1}
+.brand small{color:var(--tx3);font-size:11px;font-weight:700;letter-spacing:.2em}
+.nav{display:flex;align-items:center;gap:12px;min-height:46px;padding:0 14px;border-radius:12px;color:var(--tx2);font-weight:600;cursor:pointer;border:0;background:none;width:100%;text-align:left}
+.nav:hover{background:rgba(255,255,255,.04);color:#fff}
+.nav.on{background:rgba(255,197,102,.12);color:var(--acc)}
+.nav .cnt{margin-left:auto;font-size:12px;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--tx2)}
+.side .sp{flex:1}
+.who{font-size:13px;color:var(--tx3);padding:8px 14px;word-break:break-all}
+main{margin-left:240px;padding:32px clamp(16px,4vw,48px) 80px;max-width:1200px}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px}
+.top h1{margin:0;font-family:var(--disp);font-weight:800;font-size:34px;color:#fff}
+.top p{margin:4px 0 0;color:var(--tx3)}
+.mob{display:none}
+@media(max-width:860px){
+  .side{transform:translateX(-100%);transition:transform .25s}
+  .side.open{transform:none;box-shadow:0 0 80px rgba(0,0,0,.6)}
+  main{margin-left:0;padding-top:76px}
+  .mob{display:flex;position:fixed;top:0;left:0;right:0;z-index:9;align-items:center;gap:12px;padding:12px 16px;background:rgba(14,19,38,.95);border-bottom:1px solid var(--line)}
+}
+
+.demo{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;padding:14px 18px;border-radius:14px;background:#2A2110;border:1px solid rgba(255,197,102,.35);color:#FFE2A8;font-size:14px;margin-bottom:24px}
+
+/* lista */
+.list{display:flex;flex-direction:column;gap:12px}
+.item{display:flex;align-items:center;gap:16px;padding:14px;border-radius:18px;background:var(--card);border:1px solid var(--line);transition:border-color .2s}
+.item:hover{border-color:rgba(255,255,255,.18)}
+.thumb{width:96px;height:64px;border-radius:12px;object-fit:cover;flex:none;background:#1A2142;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:800;font-size:13px;text-align:center;padding:4px;overflow:hidden}
+.info{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.info b{font-size:17px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(255,255,255,.07);color:var(--tx2)}
+.m-gratis{background:#7EE0B5;color:#06261A}.m-doacao{background:#FFC566;color:#1A1206}.m-pago{background:#C9A4FF;color:#1E0F3A}
+.acts{display:flex;align-items:center;gap:6px;flex:none}
+.hide{opacity:.5}
+@media(max-width:600px){.item{flex-wrap:wrap}.thumb{width:72px;height:52px}.acts{width:100%;justify-content:flex-end}}
+.empty{padding:48px;text-align:center;color:var(--tx3);border:1px dashed var(--line);border-radius:18px}
+
+/* switch */
+.sw{position:relative;width:46px;height:26px;flex:none}
+.sw input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;z-index:1}
+.sw span{position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.14);transition:.2s}
+.sw span:after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.sw input:checked + span{background:var(--green)}
+.sw input:checked + span:after{transform:translateX(20px)}
+.sw input:focus-visible + span{outline:2px solid var(--acc);outline-offset:2px}
+
+/* editor */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:30;display:none}
+.ov.open{display:block}
+.ed{position:fixed;top:0;right:0;bottom:0;width:min(760px,100%);background:var(--bg2);border-left:1px solid var(--line);z-index:31;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s ease}
+.ed.open{transform:none}
+.ed-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 24px;border-bottom:1px solid var(--line)}
+.ed-h h2{margin:0;font-family:var(--disp);font-size:24px;color:#fff}
+.ed-b{flex:1;overflow:auto;padding:24px;display:flex;flex-direction:column;gap:22px}
+.ed-f{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;padding:16px 24px;border-top:1px solid var(--line);background:var(--bg2)}
+fieldset{border:1px solid var(--line);border-radius:18px;padding:18px;margin:0;display:flex;flex-direction:column;gap:16px}
+legend{padding:0 8px;color:var(--acc);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.f{display:flex;flex-direction:column;gap:7px}
+.f > span{font-size:13px;font-weight:600;color:var(--tx2)}
+.f small{color:var(--tx3);font-size:12px}
+.f input[type=text],.f input[type=url],.f input[type=email],.f input[type=password],.f input[type=date],.f input[type=number],.f select,.f textarea{width:100%;min-height:46px;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:var(--bg);color:#fff}
+.f textarea{min-height:96px;resize:vertical;line-height:1.5}
+.f input:focus,.f select:focus,.f textarea:focus{outline:2px solid var(--acc);outline-offset:0;border-color:transparent}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{position:relative}
+.chips input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.chips span{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.16);color:var(--tx2);font-weight:600;font-size:14px;transition:.2s}
+.chips input:checked + span{background:rgba(255,197,102,.15);border-color:var(--acc);color:#FFE2A8}
+.chips input:focus-visible + span{outline:2px solid var(--acc)}
+.colors{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.colors button{width:36px;height:36px;border-radius:10px;border:2px solid transparent;cursor:pointer}
+.colors button.on{border-color:#fff}
+.colors input[type=color]{width:44px;height:38px;border:0;background:none;padding:0;cursor:pointer}
+.up{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.up .pv{width:140px;height:90px;border-radius:12px;object-fit:cover;background:#1A2142;border:1px dashed rgba(255,255,255,.2)}
+.up .pv.sq{width:80px;height:80px}
+.filebtn{position:relative;overflow:hidden}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.gi{border-radius:14px;overflow:hidden;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column}
+.gi img{width:100%;height:110px;object-fit:cover}
+.gi .gb{padding:8px;display:flex;flex-direction:column;gap:6px}
+.gi input{width:100%;min-height:38px;padding:6px 10px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:var(--bg);color:#fff;font-size:13px}
+.gi .ga{display:flex;gap:4px;justify-content:space-between}
+.gi .ga button{width:34px;min-height:34px}
+.chk{display:flex;align-items:center;gap:12px;font-weight:600;color:var(--tx)}
+
+/* preview */
+.prev{border-radius:20px;overflow:hidden;background:var(--card);border:1px solid var(--line);max-width:320px}
+.prev .pi{position:relative;height:160px;background:#1A2142}
+.prev .pi img{width:100%;height:100%;object-fit:cover}
+.prev .pi .art{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:800;font-size:26px;text-align:center;padding:12px;background-size:20px 20px}
+.prev .bdg{position:absolute;left:12px;top:12px;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:800;text-transform:uppercase}
+.prev .pb{padding:18px;display:flex;flex-direction:column;gap:8px}
+.prev small{color:var(--tx3);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.prev b{font-family:var(--disp);font-size:21px;color:#fff}
+.prev p{margin:0;color:var(--tx2);font-size:14px;line-height:1.5}
+
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:16px;overflow:hidden}
+th,td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line)}
+th{color:var(--tx3);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);z-index:50;padding:14px 20px;border-radius:14px;background:#1E2649;border:1px solid var(--line);color:#fff;font-weight:600;box-shadow:0 20px 50px rgba(0,0,0,.5);transition:transform .3s}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.bad{border-color:rgba(255,138,122,.5);color:#FFB4A8}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<section id="login">
+  <form class="lbox" id="lform">
+    <svg width="48" height="48" viewBox="0 0 42 42" fill="none" aria-hidden="true"><rect x="1" y="1" width="40" height="40" rx="13" fill="#141A33" stroke="#FFC566" stroke-width="2"/><path d="M12 29V14c3-2 6-2 9 0 3-2 6-2 9 0v15c-3-2-6-2-9 0-3-2-6-2-9 0Z" stroke="#FFC566" stroke-width="2" stroke-linejoin="round"/><path d="M21 14v15" stroke="#FFC566" stroke-width="2"/><circle cx="32" cy="10" r="3" fill="#FFD27A"/></svg>
+    <h1>Painel da Fabula</h1>
+    <p id="lhint" style="margin:0;color:var(--tx3);line-height:1.5"></p>
+    <label class="f"><span>E-mail</span><input type="email" id="lemail" autocomplete="username" required></label>
+    <label class="f"><span>Senha</span><input type="password" id="lpass" autocomplete="current-password" required></label>
+    <div class="err" id="lerr" role="alert"></div>
+    <button class="btn b-acc" type="submit" id="lbtn">Entrar</button>
+    <a href="index.html" style="text-align:center;font-size:14px;padding:8px">Voltar ao site</a>
+  </form>
+</section>
+
+<!-- APP -->
+<div id="app">
+  <div class="mob">
+    <button class="b-icon btn" id="menuBtn" aria-label="Abrir menu"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <b class="disp" style="font-size:18px;color:#fff">Painel da Fabula</b>
+  </div>
+  <aside class="side" id="side">
+    <div class="brand">
+      <svg width="38" height="38" viewBox="0 0 42 42" fill="none" aria-hidden="true"><rect x="1" y="1" width="40" height="40" rx="13" fill="#141A33" stroke="#FFC566" stroke-width="2"/><path d="M12 29V14c3-2 6-2 9 0 3-2 6-2 9 0v15c-3-2-6-2-9 0-3-2-6-2-9 0Z" stroke="#FFC566" stroke-width="2" stroke-linejoin="round"/><circle cx="32" cy="10" r="3" fill="#FFD27A"/></svg>
+      <span><b>Fabula</b><small>PAINEL</small></span>
+    </div>
+    <button class="nav on" data-v="jogos"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="6"/><path d="M7 12h4M9 10v4"/><circle cx="16" cy="11" r="1"/><circle cx="18" cy="13" r="1"/></svg>Jogos<span class="cnt" id="cJ">0</span></button>
+    <button class="nav" data-v="posts"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"/></svg>Novidades<span class="cnt" id="cP">0</span></button>
+    <button class="nav" data-v="inscritos"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>Inscritos<span class="cnt" id="cI">0</span></button>
+    <button class="nav" data-v="ajustes"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>Ajustes do site</button>
+    <div class="sp"></div>
+    <a class="nav" href="index.html" target="_blank"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3h7v7M10 14 21 3M19 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6"/></svg>Ver o site</a>
+    <button class="nav" id="logout"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sair</button>
+    <div class="who" id="who"></div>
+  </aside>
+  <main id="main"></main>
+</div>
+
+<div class="ov" id="ov"></div>
+<aside class="ed" id="ed" aria-modal="true" role="dialog" aria-labelledby="edTitle">
+  <div class="ed-h"><h2 id="edTitle">Editar</h2><button class="btn b-icon" id="edX" aria-label="Fechar"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <form class="ed-b" id="edBody" novalidate></form>
+  <div class="ed-f"><button class="btn b-red" id="edDel" type="button">Excluir</button><span style="flex:1"></span><button class="btn b-ghost" id="edCancel" type="button">Cancelar</button><button class="btn b-acc" id="edSave" type="button">Salvar</button></div>
+</aside>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="js/data.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  var MODEL = { gratis: 'Grátis', doacao: 'Doação', pago: 'Pago' };
+  var STATUS = { lancado: 'Lançado', producao: 'Em produção', embreve: 'Em breve' };
+  var PLATS = ['Navegador', 'Android', 'iOS', 'Windows', 'Steam', 'itch.io', 'Site'];
+  var COLORS = ['#7EE0B5', '#FFC566', '#C9A4FF', '#FF8A7A', '#7CC8FF', '#FF9ED2'];
+  var TAGS = ['Atualização', 'Lançamento', 'Evento', 'Devlog'];
+  var view = 'jogos', jogos = [], posts = [], insc = [], cur = null, curType = null;
+  var I = {
+    edit: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+    up: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>',
+    down: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+    left: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
+    right: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
+    del: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>',
+    plus: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+    img: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>'
+  };
+
+  function toast(msg, bad) { var t = $('toast'); t.textContent = msg; t.className = 'toast show' + (bad ? ' bad' : ''); clearTimeout(t._t); t._t = setTimeout(function () { t.className = 'toast' + (bad ? ' bad' : ''); }, 2800); }
+  function busy(btn, on, txt) { btn.disabled = on; if (on) { btn._t = btn.textContent; btn.textContent = txt || 'Salvando...'; } else if (btn._t) btn.textContent = btn._t; }
+
+  /* ---------------- login ---------------- */
+  $('lhint').textContent = FB.mode === 'demo'
+    ? 'Modo demonstração: o Supabase ainda não foi configurado. Digite qualquer e-mail e senha para testar. Nada sai do seu navegador.'
+    : 'Entre com o e-mail e a senha de administrador.';
+  $('lform').addEventListener('submit', async function (e) {
+    e.preventDefault(); $('lerr').textContent = '';
+    busy($('lbtn'), true, 'Entrando...');
+    try {
+      await FB.login($('lemail').value.trim(), $('lpass').value);
+      if (FB.mode === 'demo') sessionStorage.setItem('fabula_demo_login', '1');
+      start();
+    } catch (err) { $('lerr').textContent = err.message; }
+    busy($('lbtn'), false);
+  });
+  $('logout').addEventListener('click', async function () { await FB.logout(); location.reload(); });
+
+  async function start() {
+    var u = await FB.user();
+    if (!u) { $('login').style.display = 'flex'; $('app').style.display = 'none'; return; }
+    $('login').style.display = 'none'; $('app').style.display = 'block';
+    $('who').textContent = FB.mode === 'demo' ? 'Modo demonstração' : u.email;
+    await reload(); render();
+  }
+
+  async function reload() {
+    try {
+      var r = await Promise.all([FB.list('jogos', true), FB.list('posts', true), FB.listSubscribers()]);
+      jogos = r[0]; posts = r[1]; insc = r[2];
+    } catch (e) { toast('Erro ao carregar: ' + e.message, true); }
+    $('cJ').textContent = jogos.length; $('cP').textContent = posts.length; $('cI').textContent = insc.length;
+  }
+
+  /* ---------------- navegação ---------------- */
+  [].forEach.call(document.querySelectorAll('.nav[data-v]'), function (b) {
+    b.addEventListener('click', function () {
+      view = b.dataset.v;
+      [].forEach.call(document.querySelectorAll('.nav[data-v]'), function (x) { x.classList.toggle('on', x === b); });
+      $('side').classList.remove('open'); reload().then(render);
+    });
+  });
+  $('menuBtn').addEventListener('click', function () { $('side').classList.toggle('open'); });
+
+  function demoBar() {
+    return FB.mode === 'demo' ? '<div class="demo"><span><b>Modo demonstração.</b> As mudanças ficam só neste navegador. Configure o Supabase (veja o LEIA-ME) para publicar de verdade.</span><button class="btn b-ghost" id="resetDemo" type="button">Restaurar exemplo</button></div>' : '';
+  }
+  function bindDemo() {
+    var b = $('resetDemo'); if (!b) return;
+    b.onclick = async function () { if (confirm('Apagar tudo que você fez no modo demonstração e voltar aos dados de exemplo?')) { FB.resetDemo(); await reload(); render(); toast('Dados de exemplo restaurados'); } };
+  }
+
+  function render() {
+    var m = $('main');
+    if (view === 'jogos') {
+      m.innerHTML = demoBar() + '<div class="top"><div><h1>Jogos</h1><p>A ordem aqui é a mesma do site.</p></div><button class="btn b-acc" id="newG">' + I.plus + 'Novo jogo</button></div>' +
+        '<div class="list">' + (jogos.length ? jogos.map(function (g, i) {
+          var img = g.capa || (g.galeria && g.galeria[0] && g.galeria[0].url);
+          return '<div class="item' + (g.visivel === false ? ' hide' : '') + '">' +
+            (img ? '<img class="thumb" src="' + esc(img) + '" alt="">' : '<div class="thumb" style="color:' + esc(g.cor) + '">' + esc(g.titulo) + '</div>') +
+            '<div class="info"><b>' + esc(g.titulo) + '</b><div class="tags"><span class="tag m-' + g.modelo + '">' + MODEL[g.modelo] + '</span><span class="tag">' + esc(STATUS[g.status] || '') + '</span>' + (g.em_destaque ? '<span class="tag" style="color:#7EE0B5">Em destaque</span>' : '') + (g.visivel === false ? '<span class="tag">Oculto</span>' : '') + '</div></div>' +
+            '<div class="acts"><button class="btn b-icon" data-a="up" data-i="' + i + '" aria-label="Subir"' + (i === 0 ? ' disabled' : '') + '>' + I.up + '</button><button class="btn b-icon" data-a="down" data-i="' + i + '" aria-label="Descer"' + (i === jogos.length - 1 ? ' disabled' : '') + '>' + I.down + '</button>' +
+            '<label class="sw" title="Visível no site"><input type="checkbox" data-a="vis" data-i="' + i + '"' + (g.visivel !== false ? ' checked' : '') + ' aria-label="Visível no site"><span></span></label>' +
+            '<button class="btn b-ghost" data-a="edit" data-i="' + i + '">' + I.edit + 'Editar</button></div></div>';
+        }).join('') : '<div class="empty">Nenhum jogo ainda. Clique em <b>Novo jogo</b>.</div>') + '</div>';
+      $('newG').onclick = function () { openGame(null); };
+      m.querySelector('.list').onclick = listAct;
+      m.querySelector('.list').onchange = listAct;
+    } else if (view === 'posts') {
+      m.innerHTML = demoBar() + '<div class="top"><div><h1>Novidades</h1><p>As 3 mais recentes aparecem na página inicial.</p></div><button class="btn b-acc" id="newP">' + I.plus + 'Nova novidade</button></div>' +
+        '<div class="list">' + (posts.length ? posts.map(function (p, i) {
+          return '<div class="item' + (p.visivel === false ? ' hide' : '') + '">' + (p.imagem ? '<img class="thumb" src="' + esc(p.imagem) + '" alt="">' : '<div class="thumb">' + I.img + '</div>') +
+            '<div class="info"><b>' + esc(p.titulo) + '</b><div class="tags"><span class="tag">' + esc(p.tag) + '</span><span class="tag">' + esc(p.data) + '</span>' + (p.visivel === false ? '<span class="tag">Oculto</span>' : '') + '</div></div>' +
+            '<div class="acts"><button class="btn b-ghost" data-p="' + i + '">' + I.edit + 'Editar</button></div></div>';
+        }).join('') : '<div class="empty">Nenhuma novidade ainda.</div>') + '</div>';
+      $('newP').onclick = function () { openPost(null); };
+      m.querySelector('.list').onclick = function (e) { var b = e.target.closest('[data-p]'); if (b) openPost(posts[+b.dataset.p]); };
+    } else if (view === 'inscritos') {
+      m.innerHTML = demoBar() + '<div class="top"><div><h1>Inscritos</h1><p>Quem pediu para receber novidades.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn b-ghost" id="cpy">Copiar e-mails</button><button class="btn b-acc" id="csv">Baixar planilha (CSV)</button></div></div>' +
+        (insc.length ? '<table><thead><tr><th>E-mail</th><th>Data</th></tr></thead><tbody>' + insc.map(function (x) { return '<tr><td>' + esc(x.email) + '</td><td>' + esc(String(x.criado_em || '').slice(0, 10).split('-').reverse().join('/')) + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty">Ninguém se inscreveu ainda.</div>');
+      $('cpy').onclick = function () { navigator.clipboard.writeText(insc.map(function (x) { return x.email; }).join(', ')).then(function () { toast('E-mails copiados'); }); };
+      $('csv').onclick = function () {
+        var csv = 'email;data\n' + insc.map(function (x) { return x.email + ';' + String(x.criado_em || '').slice(0, 10); }).join('\n');
+        var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' })); a.download = 'inscritos-fabula.csv'; a.click();
+      };
+    } else if (view === 'ajustes') {
+      FB.getSettings().then(function (s) {
+        m.innerHTML = demoBar() + '<div class="top"><div><h1>Ajustes do site</h1><p>Links e textos gerais.</p></div></div>' +
+          '<form id="aj" style="display:flex;flex-direction:column;gap:20px;max-width:720px">' +
+          '<fieldset><legend>Topo do site</legend><label class="f"><span>Aviso de novidade (aparece em cima do título)</span><input type="text" name="aviso_topo" value="' + esc(s.aviso_topo) + '"><small>Deixe vazio para esconder.</small></label></fieldset>' +
+          '<fieldset><legend>Doações</legend><label class="f"><span>Link para doar</span><input type="url" name="link_doacao" value="' + esc(s.link_doacao) + '" placeholder="https://..."><small>Pode ser sua página do itch.io, Livepix, Ko-fi, Apoia.se ou link de pagamento do Mercado Pago.</small></label></fieldset>' +
+          '<fieldset><legend>Redes e contato</legend><div class="g2">' +
+          [['email', 'E-mail de contato', 'email'], ['itch', 'itch.io', 'url'], ['steam', 'Steam', 'url'], ['instagram', 'Instagram', 'url'], ['youtube', 'YouTube', 'url']].map(function (x) {
+            return '<label class="f"><span>' + x[1] + '</span><input type="' + x[2] + '" name="' + x[0] + '" value="' + esc(s[x[0]]) + '"></label>';
+          }).join('') + '</div></fieldset>' +
+          '<div><button class="btn b-acc" type="submit" id="ajSave">Salvar ajustes</button></div></form>';
+        bindDemo();
+        $('aj').onsubmit = async function (e) {
+          e.preventDefault(); var d = {}; new FormData(this).forEach(function (v, k) { d[k] = String(v).trim(); });
+          busy($('ajSave'), true);
+          try { await FB.saveSettings(d); toast('Ajustes salvos'); } catch (err) { toast(err.message, true); }
+          busy($('ajSave'), false);
+        };
+      });
+      return;
+    }
+    bindDemo();
+  }
+
+  async function listAct(e) {
+    var el = e.target.closest('[data-a]'); if (!el) return;
+    var i = +el.dataset.i, a = el.dataset.a;
+    if (a === 'edit' && e.type === 'click') return openGame(jogos[i]);
+    if (a === 'vis' && e.type === 'change') {
+      var g = Object.assign({}, jogos[i], { visivel: el.checked });
+      try { await FB.save('jogos', g); jogos[i] = g; toast(el.checked ? 'Jogo visível no site' : 'Jogo escondido do site'); render(); } catch (err) { toast(err.message, true); el.checked = !el.checked; }
+      return;
+    }
+    if ((a === 'up' || a === 'down') && e.type === 'click') {
+      var j = a === 'up' ? i - 1 : i + 1; if (j < 0 || j >= jogos.length) return;
+      var t = jogos[i]; jogos[i] = jogos[j]; jogos[j] = t;
+      try { await Promise.all(jogos.map(function (g, k) { g.ordem = k + 1; return FB.save('jogos', g); })); render(); }
+      catch (err) { toast(err.message, true); await reload(); render(); }
+    }
+  }
+
+  /* ---------------- editor genérico ---------------- */
+  function openEd(title, html, canDel) {
+    $('edTitle').textContent = title; $('edBody').innerHTML = html; $('edDel').style.display = canDel ? '' : 'none';
+    $('ov').classList.add('open'); $('ed').classList.add('open');
+    setTimeout(function () { var f = $('edBody').querySelector('input,textarea'); if (f) f.focus(); }, 300);
+  }
+  function closeEd() { $('ov').classList.remove('open'); $('ed').classList.remove('open'); cur = null; }
+  $('edX').onclick = closeEd; $('edCancel').onclick = closeEd; $('ov').onclick = closeEd;
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && $('ed').classList.contains('open')) closeEd(); });
+
+  async function pickUpload(input, cb) {
+    var files = [].slice.call(input.files || []); if (!files.length) return;
+    toast(files.length > 1 ? 'Enviando ' + files.length + ' imagens...' : 'Enviando imagem...');
+    try { for (var i = 0; i < files.length; i++) cb(await FB.upload(files[i])); toast('Imagem enviada'); }
+    catch (err) { toast('Erro no envio: ' + err.message, true); }
+    input.value = '';
+  }
+
+  /* ---------------- editor de jogo ---------------- */
+  function openGame(g) {
+    curType = 'jogos';
+    cur = g ? JSON.parse(JSON.stringify(g)) : {
+      titulo: '', genero: '', modelo: 'gratis', preco: '', status: 'producao', status_texto: 'Em desenvolvimento', cor: COLORS[jogos.length % COLORS.length],
+      resumo: '', descricao: '', destaques: [], plataformas: [], capa: '', icone: '', galeria: [],
+      link_jogar: '', link_download: '', link_steam: '', link_itch: '', em_destaque: false, visivel: true, ordem: jogos.length + 1
+    };
+    var c = cur;
+    var html =
+      '<fieldset><legend>Básico</legend>' +
+      '<label class="f"><span>Nome do jogo *</span><input type="text" name="titulo" value="' + esc(c.titulo) + '" required></label>' +
+      '<label class="f"><span>Gênero</span><input type="text" name="genero" value="' + esc(c.genero) + '" placeholder="Ex.: Aventura · Pixel art"></label>' +
+      '<label class="f"><span>Resumo curto (aparece no catálogo)</span><input type="text" name="resumo" maxlength="140" value="' + esc(c.resumo) + '"></label>' +
+      '<label class="f"><span>Descrição completa</span><textarea name="descricao">' + esc(c.descricao) + '</textarea></label>' +
+      '<label class="f"><span>Destaques (um por linha)</span><textarea name="destaques" placeholder="Mais de 150 modelos 3D&#10;Joga no navegador">' + esc((c.destaques || []).join('\n')) + '</textarea></label>' +
+      '</fieldset>' +
+      '<fieldset><legend>Venda e situação</legend><div class="g2">' +
+      '<label class="f"><span>Modelo</span><select name="modelo">' + Object.keys(MODEL).map(function (k) { return '<option value="' + k + '"' + (c.modelo === k ? ' selected' : '') + '>' + MODEL[k] + '</option>'; }).join('') + '</select></label>' +
+      '<label class="f"><span>Preço (se for pago)</span><input type="text" name="preco" value="' + esc(c.preco) + '" placeholder="R$ 19,90"></label>' +
+      '<label class="f"><span>Situação</span><select name="status">' + Object.keys(STATUS).map(function (k) { return '<option value="' + k + '"' + (c.status === k ? ' selected' : '') + '>' + STATUS[k] + '</option>'; }).join('') + '</select></label>' +
+      '<label class="f"><span>Texto da situação</span><input type="text" name="status_texto" value="' + esc(c.status_texto) + '" placeholder="Disponível, Em breve..."></label>' +
+      '</div><div class="f"><span>Plataformas</span><div class="chips">' + PLATS.concat((c.plataformas || []).filter(function (p) { return PLATS.indexOf(p) < 0; })).map(function (p) {
+        return '<label><input type="checkbox" name="plat" value="' + esc(p) + '"' + ((c.plataformas || []).indexOf(p) >= 0 ? ' checked' : '') + '><span>' + esc(p) + '</span></label>';
+      }).join('') + '</div></div></fieldset>' +
+      '<fieldset><legend>Links</legend><div class="g2">' +
+      '<label class="f"><span>Jogar no navegador</span><input type="url" name="link_jogar" value="' + esc(c.link_jogar) + '" placeholder="https://..."></label>' +
+      '<label class="f"><span>Download direto (APK, .zip)</span><input type="url" name="link_download" value="' + esc(c.link_download) + '" placeholder="https://..."></label>' +
+      '<label class="f"><span>Página na Steam</span><input type="url" name="link_steam" value="' + esc(c.link_steam) + '" placeholder="https://store.steampowered.com/..."></label>' +
+      '<label class="f"><span>Página no itch.io</span><input type="url" name="link_itch" value="' + esc(c.link_itch) + '" placeholder="https://fabula.itch.io/..."></label>' +
+      '</div></fieldset>' +
+      '<fieldset><legend>Visual</legend>' +
+      '<div class="f"><span>Cor do jogo (usada na vitrine)</span><div class="colors" id="colors">' + COLORS.map(function (x) { return '<button type="button" data-c="' + x + '" style="background:' + x + '" class="' + (c.cor === x ? 'on' : '') + '" aria-label="Cor ' + x + '"></button>'; }).join('') + '<input type="color" id="colorIn" value="' + esc(c.cor) + '" aria-label="Outra cor"></div></div>' +
+      '<div class="g2"><div class="f"><span>Capa</span><div class="up"><img class="pv" id="pvCapa" alt="" src="' + esc(c.capa) + '"' + (c.capa ? '' : ' style="visibility:hidden"') + '><span class="btn b-ghost filebtn">' + I.img + 'Escolher<input type="file" accept="image/*" id="fCapa"></span>' + '<button type="button" class="btn b-icon" id="rmCapa" aria-label="Remover capa">' + I.del + '</button></div></div>' +
+      '<div class="f"><span>Ícone</span><div class="up"><img class="pv sq" id="pvIcone" alt="" src="' + esc(c.icone) + '"' + (c.icone ? '' : ' style="visibility:hidden"') + '><span class="btn b-ghost filebtn">' + I.img + 'Escolher<input type="file" accept="image/*" id="fIcone"></span><button type="button" class="btn b-icon" id="rmIcone" aria-label="Remover ícone">' + I.del + '</button></div></div></div>' +
+      '<div class="f"><span>Galeria de imagens</span><small>A primeira e a última aparecem no topo do site quando o jogo está em destaque. Da 3ª à 5ª viram os cartões grandes.</small><div class="gal" id="gal"></div><span class="btn b-ghost filebtn" style="align-self:flex-start">' + I.plus + 'Adicionar imagens<input type="file" accept="image/*" multiple id="fGal"></span></div>' +
+      '</fieldset>' +
+      '<fieldset><legend>Exibição</legend>' +
+      '<label class="chk"><span class="sw"><input type="checkbox" name="visivel"' + (c.visivel !== false ? ' checked' : '') + '><span></span></span>Mostrar no site</label>' +
+      '<label class="chk"><span class="sw"><input type="checkbox" name="em_destaque"' + (c.em_destaque ? ' checked' : '') + '><span></span></span>Jogo em destaque (topo e seção especial — só um por vez)</label>' +
+      '</fieldset>' +
+      '<fieldset><legend>Prévia do cartão</legend><div class="prev" id="prev"></div></fieldset>';
+    openEd(g ? 'Editar jogo' : 'Novo jogo', html, !!g);
+    var B = $('edBody');
+    function renderGal() {
+      $('gal').innerHTML = (cur.galeria || []).map(function (x, i) {
+        return '<div class="gi"><img src="' + esc(x.url) + '" alt=""><div class="gb"><input type="text" data-l="' + i + '" value="' + esc(x.legenda) + '" placeholder="Legenda" aria-label="Legenda da imagem ' + (i + 1) + '"><div class="ga"><button type="button" class="btn b-icon" data-gm="' + i + '" data-d="-1" aria-label="Mover para a esquerda">' + I.left + '</button><button type="button" class="btn b-icon" data-gm="' + i + '" data-d="1" aria-label="Mover para a direita">' + I.right + '</button><button type="button" class="btn b-icon" data-gr="' + i + '" aria-label="Remover imagem">' + I.del + '</button></div></div></div>';
+      }).join('') || '<div class="empty" style="padding:20px">Sem imagens ainda.</div>';
+    }
+    function preview() {
+      readGame();
+      var img = cur.capa || (cur.galeria[0] && cur.galeria[0].url);
+      $('prev').innerHTML = '<div class="pi">' + (img ? '<img src="' + esc(img) + '" alt="">' : '<div class="art" style="color:' + esc(cur.cor) + ';background-image:radial-gradient(' + esc(cur.cor) + '44 1.5px,transparent 1.5px)">' + esc(cur.titulo || 'Nome do jogo') + '</div>') +
+        '<span class="bdg m-' + cur.modelo + '">' + MODEL[cur.modelo] + '</span></div><div class="pb"><small>' + esc(cur.genero || 'Gênero') + ' · ' + esc(cur.status_texto) + '</small><b>' + esc(cur.titulo || 'Nome do jogo') + '</b><p>' + esc(cur.resumo || 'Resumo curto do jogo.') + '</p></div>';
+    }
+    renderGal(); preview();
+    B.oninput = function (e) { if (e.target.dataset.l != null) cur.galeria[+e.target.dataset.l].legenda = e.target.value; preview(); };
+    B.onchange = preview;
+    $('colors').onclick = function (e) { var b = e.target.closest('[data-c]'); if (!b) return; cur.cor = b.dataset.c; $('colorIn').value = cur.cor; [].forEach.call(this.querySelectorAll('[data-c]'), function (x) { x.classList.toggle('on', x === b); }); preview(); };
+    $('colorIn').oninput = function () { cur.cor = this.value; [].forEach.call($('colors').querySelectorAll('[data-c]'), function (x) { x.classList.remove('on'); }); preview(); };
+    $('fCapa').onchange = function () { pickUpload(this, function (u) { cur.capa = u; $('pvCapa').src = u; $('pvCapa').style.visibility = ''; preview(); }); };
+    $('fIcone').onchange = function () { pickUpload(this, function (u) { cur.icone = u; $('pvIcone').src = u; $('pvIcone').style.visibility = ''; }); };
+    $('rmCapa').onclick = function () { cur.capa = ''; $('pvCapa').style.visibility = 'hidden'; preview(); };
+    $('rmIcone').onclick = function () { cur.icone = ''; $('pvIcone').style.visibility = 'hidden'; };
+    $('fGal').onchange = function () { pickUpload(this, function (u) { cur.galeria.push({ url: u, legenda: '' }); renderGal(); preview(); }); };
+    $('gal').onclick = function (e) {
+      var r = e.target.closest('[data-gr]'), mv = e.target.closest('[data-gm]');
+      if (r) { cur.galeria.splice(+r.dataset.gr, 1); renderGal(); preview(); }
+      if (mv) { var i = +mv.dataset.gm, j = i + (+mv.dataset.d); if (j < 0 || j >= cur.galeria.length) return; var t = cur.galeria[i]; cur.galeria[i] = cur.galeria[j]; cur.galeria[j] = t; renderGal(); preview(); }
+    };
+  }
+  function readGame() {
+    var B = $('edBody'), v = function (n) { var el = B.elements[n]; return el ? String(el.value).trim() : ''; };
+    ['titulo', 'genero', 'resumo', 'descricao', 'modelo', 'preco', 'status', 'status_texto', 'link_jogar', 'link_download', 'link_steam', 'link_itch'].forEach(function (k) { cur[k] = v(k); });
+    cur.destaques = v('destaques').split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+    cur.plataformas = [].slice.call(B.querySelectorAll('input[name=plat]:checked')).map(function (x) { return x.value; });
+    cur.visivel = B.elements.visivel.checked; cur.em_destaque = B.elements.em_destaque.checked;
+  }
+
+  /* ---------------- editor de novidade ---------------- */
+  function openPost(p) {
+    curType = 'posts';
+    cur = p ? JSON.parse(JSON.stringify(p)) : { titulo: '', tag: 'Atualização', data: new Date().toISOString().slice(0, 10), resumo: '', imagem: '', link: '', visivel: true };
+    var c = cur;
+    openEd(p ? 'Editar novidade' : 'Nova novidade',
+      '<fieldset><legend>Conteúdo</legend>' +
+      '<label class="f"><span>Título *</span><input type="text" name="titulo" value="' + esc(c.titulo) + '" required></label>' +
+      '<div class="g2"><label class="f"><span>Tipo</span><select name="tag">' + TAGS.map(function (t) { return '<option' + (c.tag === t ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></label>' +
+      '<label class="f"><span>Data</span><input type="date" name="data" value="' + esc(c.data) + '"></label></div>' +
+      '<label class="f"><span>Resumo</span><textarea name="resumo">' + esc(c.resumo) + '</textarea></label>' +
+      '<label class="f"><span>Link para o texto completo (opcional)</span><input type="url" name="link" value="' + esc(c.link) + '" placeholder="https://... (itch.io, Instagram, YouTube)"></label>' +
+      '<div class="f"><span>Imagem</span><div class="up"><img class="pv" id="pvImg" alt="" src="' + esc(c.imagem) + '"' + (c.imagem ? '' : ' style="visibility:hidden"') + '><span class="btn b-ghost filebtn">' + I.img + 'Escolher<input type="file" accept="image/*" id="fImg"></span><button type="button" class="btn b-icon" id="rmImg" aria-label="Remover imagem">' + I.del + '</button></div></div>' +
+      '<label class="chk"><span class="sw"><input type="checkbox" name="visivel"' + (c.visivel !== false ? ' checked' : '') + '><span></span></span>Mostrar no site</label>' +
+      '</fieldset>', !!p);
+    $('fImg').onchange = function () { pickUpload(this, function (u) { cur.imagem = u; $('pvImg').src = u; $('pvImg').style.visibility = ''; }); };
+    $('rmImg').onclick = function () { cur.imagem = ''; $('pvImg').style.visibility = 'hidden'; };
+  }
+  function readPost() {
+    var B = $('edBody');
+    ['titulo', 'tag', 'data', 'resumo', 'link'].forEach(function (k) { cur[k] = String(B.elements[k].value).trim(); });
+    cur.visivel = B.elements.visivel.checked;
+  }
+
+  /* ---------------- salvar / excluir ---------------- */
+  $('edSave').onclick = async function () {
+    if (curType === 'jogos') readGame(); else readPost();
+    if (!cur.titulo) { toast('Preencha o nome/título', true); $('edBody').elements.titulo.focus(); return; }
+    var btn = this; busy(btn, true);
+    try {
+      if (curType === 'jogos' && cur.em_destaque) {
+        var others = jogos.filter(function (g) { return g.em_destaque && g.id !== cur.id; });
+        await Promise.all(others.map(function (g) { g.em_destaque = false; return FB.save('jogos', g); }));
+      }
+      await FB.save(curType, cur);
+      toast('Salvo! Já está no site.'); closeEd(); await reload(); render();
+    } catch (err) { toast('Erro ao salvar: ' + err.message, true); }
+    busy(btn, false);
+  };
+  $('edDel').onclick = async function () {
+    if (!cur || !cur.id) return;
+    if (!confirm('Excluir "' + (cur.titulo || '') + '"? Isso não pode ser desfeito.')) return;
+    try { await FB.remove(curType, cur.id); toast('Excluído'); closeEd(); await reload(); render(); }
+    catch (err) { toast('Erro ao excluir: ' + err.message, true); }
+  };
+
+  start();
+})();
+</script>
+</body>
+</html>
